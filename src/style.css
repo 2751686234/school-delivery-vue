@@ -1,0 +1,60 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+/* 导航栏居中 */
+.el-menu.el-menu--horizontal {
+  display: flex !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+html, body, #app {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  background-color: #f5f7fa;
+  font-family: "Microsoft YaHei", sans-serif;
+}
+
+/* 所有文本居中 */
+body, .el-card, .el-form, .el-table, .el-descriptions {
+  text-align: center !important;
+}
+
+.el-container {
+  width: 100%;
+  height: 100%;
+}
+
+.el-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  border: none;
+  margin: 0 auto;
+}
+
+.el-button {
+  border-radius: 8px;
+}
+
+.el-menu {
+  background-color: #fff !important;
+  border-bottom: 1px solid #eee;
+  width: 100%;
+}
+
+/* 容器自适应 */
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.page-title {
+  text-align: center !important;
+  margin-bottom: 25px !important;
+}
