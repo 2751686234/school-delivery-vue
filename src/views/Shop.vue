@@ -66,19 +66,43 @@ const selectShop = (shop) => {
   ]
 }
 
-// ✅ 绝对不重名：addToCart
 const addToCart = async (food) => {
   try {
+    // 1. 校验用户态
     const user = JSON.parse(localStorage.getItem('user'))
+    if (!user || !user.id) {
+      ElMessage.warning("请先登录！")
+      return
+    }
+    // 2. 校验商家选择
+    if (!currentShop.value.id) {
+      ElMessage.warning("请先选择商家！")
+      return
+    }
+    // 3. 调用加购接口
     await addCart({
       userId: user.id,
       shopId: currentShop.value.id,
-      foodName: food.name,
+      foodId: food.id,
       price: food.price,
       num: 1
     })
     ElMessage.success({ message: "已加入购物车", max:2, duration:1000 })
+    
+    // 4. 可选：主动拉取最新购物车（或通知Cart.vue更新）
+    // 比如用pinia/vuex存储购物车，或localStorage临时追加
+    const cart = JSON.parse(localStorage.getItem('cart')) || []
+    cart.push({
+      foodName: food.name,
+      price: food.price,
+      num: 1,
+      shopId: currentShop.value.id,
+      userId: user.id
+    })
+    localStorage.setItem('cart', JSON.stringify(cart))
+
   } catch (e) {
+    console.error("加购失败：", e) // 打印错误日志
     ElMessage.error("加入失败")
   }
 }

@@ -76,10 +76,28 @@ const cartList = ref([])
 
 onMounted(async () => {
   try {
-    const user = JSON.parse(localStorage.getItem('user'))
+    const userStr = localStorage.getItem('user')
+    if (!userStr) {
+      ElMessage.warning('请先登录')
+      return
+    }
+
+    const user = JSON.parse(userStr)
+    if (!user.id) {
+      ElMessage.warning('登录信息异常')
+      return
+    }
+
+    console.log('正在加载购物车，用户ID：', user.id)
+
+    // 调用后端接口
     const res = await getCartList(user.id)
-    cartList.value = res.data
+    console.log('购物车返回：', res)
+
+    // 关键修复：后端返回 null 时，给个空数组，不崩溃
+    cartList.value = res.data || []
   } catch (err) {
+    console.error('购物车报错：', err)
     cartList.value = []
   }
 })
