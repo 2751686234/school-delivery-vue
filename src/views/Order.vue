@@ -10,7 +10,14 @@
 
     <div class="container">
       <h2 class="text-center">我的订单</h2>
-      <div v-for="order in orderList" :key="order.id" class="order-item">
+
+      <div v-if="loading" class="loading">加载中...</div>
+
+      <div v-else-if="orderList.length === 0" class="empty">
+        暂无订单
+      </div>
+
+      <div v-else v-for="order in orderList" :key="order.id" class="order-item">
         <el-card>
           <div><strong>订单号：{{ order.orderNo }}</strong></div>
           <div>金额：¥{{ order.totalPrice }}</div>
@@ -19,10 +26,10 @@
           <div style="margin-top:10px;">
             <div style="font-weight:bold;margin-bottom:6px;">配送进度</div>
             <el-timeline>
-              <el-timeline-item timestamp="下单成功" :type="order.step >=1 ?'primary':'gray'" />
-              <el-timeline-item timestamp="商家接单" :type="order.step >=2 ?'primary':'gray'" />
-              <el-timeline-item timestamp="配送中" :type="order.step >=3 ?'primary':'gray'" />
-              <el-timeline-item timestamp="已送达" :type="order.step >=4 ?'success':'gray'" />
+              <el-timeline-item timestamp="下单成功" :type="order.status >= 1 ? 'primary' : 'info'" />
+              <el-timeline-item timestamp="商家接单" :type="order.status >= 2 ? 'primary' : 'info'" />
+              <el-timeline-item timestamp="配送中" :type="order.status >= 3 ? 'primary' : 'info'" />
+              <el-timeline-item timestamp="已完成" :type="order.status >= 4 ? 'success' : 'info'" />
             </el-timeline>
           </div>
         </el-card>
@@ -33,17 +40,20 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getUserOrderList } from '@/api/order'
+import { getUserOrderList } from '@/api/Order'
 
 const orderList = ref([])
+const loading = ref(true)
 
 onMounted(async () => {
   try {
     const user = JSON.parse(localStorage.getItem('user'))
     const res = await getUserOrderList(user.id)
-    orderList.value = res.data
+    orderList.value = res.data || []
   } catch (err) {
     orderList.value = []
+  } finally {
+    loading.value = false
   }
 })
 </script>
@@ -54,4 +64,6 @@ onMounted(async () => {
 .container { width:95%; max-width:1000px; margin:0 auto; padding:20px 0; }
 .text-center { text-align:center; }
 .order-item { margin-bottom:16px; }
+.loading { text-align:center; padding:20px; }
+.empty { text-align:center; padding:40px; color:#999; }
 </style>

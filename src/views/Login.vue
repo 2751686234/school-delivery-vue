@@ -64,7 +64,11 @@ const loginForm = ref({
 const handleLogin = async () => {
   // 1. 非空校验
   if (!loginForm.value.username || !loginForm.value.password) {
-    ElMessage.warning('账号和密码不能为空！')
+    ElMessage.warning({
+      message: '账号和密码不能为空！',
+      duration: 1500,
+      center: true
+    })
     return
   }
 
@@ -83,20 +87,20 @@ const handleLogin = async () => {
     if (isApiResponse && response.code !== 200) {
       const msg = response.msg || ''
       if (/密码/.test(msg)) {
-        ElMessage.error('密码错误！')
+        ElMessage.error({ message: '密码错误！', duration: 1500, center: true })
       } else if (/身份/.test(msg)) {
-        ElMessage.error(response.msg || '登录身份错误！')
+        ElMessage.error({ message: response.msg || '登录身份错误！', duration: 1500, center: true })
       } else if (/账号|用户名/.test(msg)) {
-        ElMessage.error('账号不存在或密码错误！')
+        ElMessage.error({ message: '账号不存在或密码错误！', duration: 1500, center: true })
       } else {
-        ElMessage.error(response.msg || '账号、密码错误！')
+        ElMessage.error({ message: response.msg || '账号、密码错误！', duration: 1500, center: true })
       }
       return
     }
 
     const payload = isApiResponse ? response.data : response
     if (!payload) {
-      ElMessage.error('账号、密码错误！')
+      ElMessage.error({ message: '账号、密码错误！', duration: 1500, center: true })
       return
     }
 
@@ -105,26 +109,31 @@ const handleLogin = async () => {
 
     // 4. 身份判定：前端选中的身份必须与后端返回的真实身份一致
     if (selectedRole !== actualRole) {
-      ElMessage.error('登录身份错误，请选择正确的身份登录')
+      ElMessage.error({ message: '登录身份错误，请选择正确的身份登录', duration: 1500, center: true })
       return
     }
 
     // 5. 保存用户信息
     localStorage.setItem('user', JSON.stringify(payload))
-    ElMessage.success(`欢迎，${payload.name || payload.username}！`)
+    // ✅ 关键修改：用完整对象写法，延长显示时间到2秒
+    ElMessage.success({
+      message: `欢迎，${payload.name || payload.username}！`,
+      duration: 2000, // 延长到2秒，给足够的显示时间
+      center: true
+    })
 
-    // 6. 强制延迟跳转，确保不被中断
+    // 6. 延迟跳转时间和提示显示时间对齐（2秒后再跳转）
     setTimeout(() => {
       if (actualRole === 1) router.push('/home')
       else if (actualRole === 2) router.push('/shop-admin')
       else if (actualRole === 3) router.push('/rider')
       else if (actualRole === 4) router.push('/admin')
       else router.push('/login')
-    }, 300)
+    }, 2000) // 和上面的duration保持一致
 
   } catch (err) {
     console.error(err)
-    ElMessage.error('登录失败，请检查后端服务')
+    ElMessage.error({ message: '登录失败，请检查后端服务', duration: 1500, center: true })
   }
 }
 </script>

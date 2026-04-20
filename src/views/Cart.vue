@@ -70,6 +70,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getCartList } from '@/api/cart'
 import { createOrder } from '@/api/order'
+import request from '@/utils/request'
 
 const router = useRouter()
 const cartList = ref([])
@@ -117,10 +118,25 @@ const minus = (index) => {
   saveCart()
 }
 
-const del = (index) => {
-  cartList.value.splice(index, 1)
-  saveCart()
-  ElMessage.success({ message: "删除成功", max: 2, duration: 1000 })
+//删除购物车 
+const del = async (index) => {
+  try {
+    let cartItem = cartList.value[index]
+    await request({
+      url: "/cart/delete",
+      method: "delete",
+      params: { id: cartItem.id }
+    })
+    cartList.value.splice(index, 1)
+    ElMessage.success({
+      message: "删除成功",
+      duration: 500,
+      center: true,
+      showClose: false
+    })
+  } catch (err) {
+    ElMessage.error("删除失败")
+  }
 }
 
 const totalPrice = computed(() => {
@@ -129,7 +145,7 @@ const totalPrice = computed(() => {
     .toFixed(2)
 })
 
-// ✅ 对接后端创建订单
+// 对接后端创建订单
 const toOrder = async () => {
   if (cartList.value.length === 0) {
     ElMessage.warning({ message: "请先选择菜品", max: 2, duration: 1000 })
