@@ -5,17 +5,15 @@ import App from './App.vue'
 import router from './router'
 import './style.css'
 
-import { ElMessage } from 'element-plus'
-ElMessage.success = (options) => {
-  return ElMessage({
-    ...options,
-    type: 'success',
-    max: 2,
-    duration: 1000,
-  })
-}
-
 const app = createApp(App)
-app.use(ElementPlus)
+
+// 全局配置 message 位置，避免被导航挡住
+app.use(ElementPlus, {
+  message: {
+    offset: 70,    // 向下偏移，不被导航栏挡住
+    duration: 1200 // 显示时长
+  }
+})
+
 app.use(router)
 app.mount('#app')

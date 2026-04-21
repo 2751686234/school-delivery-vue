@@ -14,16 +14,27 @@
     <div class="page-container">
       <h2 class="page-title">商品管理</h2>
       <el-card class="card-container">
-        <!-- 商品搜索 + 新增按钮 -->
         <div class="search-add">
+          <!-- 搜索框恢复 -->
           <el-input v-model="searchKey" placeholder="搜索商品名称" style="width: 300px; margin-right: 10px;" />
           <el-button type="primary" @click="showAddDialog = true">新增商品</el-button>
         </div>
 
-        <!-- 商品表格 -->
         <el-table :data="goodsList" border style="width: 100%; margin-top: 20px;" align="center">
           <el-table-column prop="id" label="商品ID" align="center" />
           <el-table-column prop="name" label="商品名称" align="center" />
+
+          <!-- 商品图片 + 点击放大 -->
+          <el-table-column label="商品图片" align="center">
+            <template #default="scope">
+              <img
+                :src="scope.row.img"
+                class="goods-img"
+                @click="previewImg(scope.row.img)"
+              />
+            </template>
+          </el-table-column>
+
           <el-table-column prop="price" label="商品价格" align="center" />
           <el-table-column prop="stock" label="库存" align="center" />
           <el-table-column prop="status" label="状态" align="center">
@@ -37,15 +48,22 @@
             <template #default="scope">
               <el-button type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
               <el-button type="danger" size="small" @click="handleDelete(scope.row.id)">删除</el-button>
-              <el-button size="small" @click="handleStatus(scope.row)">
+              <el-button size="small" @click="handleStatus(scope.row.id)">
                 {{ scope.row.status === 1 ? '下架' : '上架' }}
               </el-button>
             </template>
           </el-table-column>
         </el-table>
 
-        <!-- 新增/编辑商品弹窗 -->
-        <el-dialog v-model="showAddDialog" title="{{ isEdit ? '编辑商品' : '新增商品' }}" width="500px">
+        <!-- 放大预览 -->
+        <el-image-viewer
+          v-if="showPreview"
+          :url-list="[previewUrl]"
+          @close="showPreview = false"
+        />
+
+        <!-- 新增/编辑弹窗 -->
+        <el-dialog v-model="showAddDialog" :title="isEdit ? '编辑商品' : '新增商品'" width="500px">
           <el-form :model="form" label-width="100px">
             <el-form-item label="商品名称">
               <el-input v-model="form.name" placeholder="请输入商品名称" />
@@ -56,15 +74,23 @@
             <el-form-item label="商品库存">
               <el-input v-model="form.stock" type="number" placeholder="请输入商品库存" />
             </el-form-item>
+
+            <!-- 上传：关闭自动上传，改用手动上传 → 彻底解决跨域 -->
             <el-form-item label="商品图片">
-              <el-upload action="#" :file-list="fileList" list-type="picture-card">
+              <el-upload
+                :auto-upload="false"
+                :file-list="fileList"
+                list-type="picture-card"
+                @change="handleManualUpload"
+              >
                 <i class="el-icon-plus"></i>
               </el-upload>
             </el-form-item>
+
             <el-form-item label="商品状态">
               <el-radio-group v-model="form.status">
-                <el-radio label="1">上架</el-radio>
-                <el-radio label="0">下架</el-radio>
+                <el-radio :value="1">上架</el-radio>
+                <el-radio :value="0">下架</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-form>
@@ -79,64 +105,103 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import request from '@/utils/request'
 
 const router = useRouter()
-// 模拟商品数据
-const goodsList = ref([
-  { id: 1, name: '香辣鸡腿堡', price: 15.9, stock: 100, status: 1 },
-  { id: 2, name: '上校鸡块', price: 8.9, stock: 80, status: 1 },
-  { id: 3, name: '珍珠奶茶', price: 12.9, stock: 120, status: 0 },
-  { id: 4, name: '薯条', price: 6.9, stock: 90, status: 1 }
-])
+const goodsList = ref([])
+
+// ✅ 恢复 searchKey，解决未定义报错
 const searchKey = ref('')
+
 const showAddDialog = ref(false)
 const isEdit = ref(false)
-const form = ref({ name: '', price: '', stock: '', status: 1 })
+const form = ref({ name: '', price: '', stock: '', status: 1, img: '' })
 const fileList = ref([])
 
-// 退出登录
-const logout = () => {
-  localStorage.clear()
-  router.push('/login')
+// 图片预览
+const showPreview = ref(false)
+const previewUrl = ref('')
+const previewImg = (url) => {
+  previewUrl.value = url
+  showPreview.value = true
 }
 
-// 编辑商品
+// 获取商品列表
+const getGoodsList = () => {
+  request.get('/goods/list').then(res => {
+    goodsList.value = res.data
+  })
+}
+onMounted(() => getGoodsList())
+
+// 手动上传图片
+const handleManualUpload = async (uploadFile) => {
+  try {
+    const formData = new FormData()
+    formData.append('file', uploadFile.raw)
+
+    const res = await request.post('/file/upload', formData)
+
+    if (res.code === 200) {
+      form.value.img = res.data
+      ElMessage.success('图片上传成功')
+    } else {
+      ElMessage.error('上传失败')
+    }
+  } catch (err) {
+    ElMessage.error('上传失败，请检查后端')
+  }
+}
+
+// 编辑
 const handleEdit = (row) => {
   isEdit.value = true
   form.value = { ...row }
+  fileList.value = row.img ? [{ url: row.img }] : []
   showAddDialog.value = true
 }
 
-// 删除商品
-const handleDelete = (id) => {
-  goodsList.value = goodsList.value.filter(item => item.id !== id)
+// 删除
+const handleDelete = async (id) => {
+  await request.get('/goods/delete', { params: { id } })
   ElMessage.success('删除成功')
+  getGoodsList()
 }
 
-// 上下架商品
-const handleStatus = (row) => {
-  row.status = row.status === 1 ? 0 : 1
-  ElMessage.success(`${row.status === 1 ? '上架' : '下架'}成功`)
+// 上下架
+const handleStatus = async (id) => {
+  await request.get('/goods/status', { params: { id } })
+  ElMessage.success('操作成功')
+  getGoodsList()
 }
 
-// 提交表单（新增/编辑）
-const submitForm = () => {
-  if (isEdit.value) {
-    const index = goodsList.value.findIndex(item => item.id === form.value.id)
-    goodsList.value[index] = { ...form.value }
-    ElMessage.success('编辑商品成功')
-  } else {
-    form.value.id = goodsList.value.length + 1
-    goodsList.value.push({ ...form.value })
-    ElMessage.success('新增商品成功')
+// 提交
+const submitForm = async () => {
+  try {
+    if (isEdit.value) {
+      await request.post('/goods/update', form.value)
+    } else {
+      await request.post('/goods/add', form.value)
+    }
+    ElMessage.success(isEdit.value ? '编辑成功' : '新增成功')
+
+    showAddDialog.value = false
+    form.value = { name: '', price: '', stock: '', status: 1, img: '' }
+    fileList.value = []
+    isEdit.value = false
+    getGoodsList()
+  } catch (e) {
+    ElMessage.error('操作失败')
   }
-  showAddDialog.value = false
-  form.value = { name: '', price: '', stock: '', status: 1 }
-  fileList.value = []
-  isEdit.value = false
+}
+
+// 退出
+const logout = () => {
+  localStorage.clear()
+  router.push('/login')
 }
 </script>
 
@@ -150,7 +215,6 @@ const submitForm = () => {
   width: 100%;
   display: flex !important;
   justify-content: center !important;
-  text-align: center !important;
 }
 .page-container {
   width: 90%;
@@ -162,7 +226,6 @@ const submitForm = () => {
 .page-title {
   font-size: 22px;
   margin-bottom: 20px;
-  text-align: center;
 }
 .card-container {
   padding: 20px;
@@ -171,6 +234,12 @@ const submitForm = () => {
 .search-add {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+}
+.goods-img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
 }
 </style>

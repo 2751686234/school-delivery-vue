@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-wrapper">
     <el-menu mode="horizontal" class="nav-bar">
       <el-menu-item index="1" @click="$router.push('/shop-admin')">商品管理</el-menu-item>
@@ -67,7 +67,7 @@
         </el-row>
 
         <!-- 优惠券弹窗 -->
-        <el-dialog v-model="showCouponDialog" title="{{ isCouponEdit ? '编辑优惠券' : '创建优惠券' }}" width="400px">
+        <el-dialog v-model="showCouponDialog" :title="isCouponEdit ? '编辑优惠券' : '创建优惠券'" width="400px">
           <el-form :model="couponForm" label-width="100px">
             <el-form-item label="优惠券名称">
               <el-input v-model="couponForm.name" placeholder="请输入优惠券名称" />
@@ -93,7 +93,7 @@
         </el-dialog>
 
         <!-- 满减弹窗 -->
-        <el-dialog v-model="showDiscountDialog" title="{{ isDiscountEdit ? '编辑满减' : '创建满减' }}" width="400px">
+        <el-dialog v-model="showDiscountDialog" :title="isDiscountEdit ? '编辑满减' : '创建满减'" width="400px">
           <el-form :model="discountForm" label-width="100px">
             <el-form-item label="活动名称">
               <el-input v-model="discountForm.name" placeholder="请输入活动名称" />

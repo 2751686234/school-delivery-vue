@@ -150,7 +150,7 @@ const getTagType = (status) => {
   switch (status) {
     case 1: return 'warning'
     case 2: return 'primary'
-    case 3: return ''
+    case 3: return 'primary'
     case 4: return 'success'
     case 5: return 'danger'
     default: return 'info'
