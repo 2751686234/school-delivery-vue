@@ -34,30 +34,52 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { getWaitTakeOrder, riderTakeOrder, completeOrder } from '@/api/order'
 const router = useRouter()
 
-const list = ref([
-  { orderNo:'20240501001', shopName:'校园汉堡店', userName:'张三', address:'学生公寓1号楼302', status:1 },
-  { orderNo:'20240501002', shopName:'奶茶小铺', userName:'李四', address:'学生公寓2号楼501', status:2 },
-])
+const list = ref([])
 
 const logout = () => {
   localStorage.clear()
   router.push('/login')
 }
-
-const next = (row) => {
-  if(row.status == 1){
-    row.status = 2
-    ElMessage.success('已取餐，开始配送')
-  }else if(row.status == 2){
-    row.status = 3
-    ElMessage.success('已送达！')
+// 获取待取餐订单
+const getWaitTakeOrders = async () => {
+  try {
+    const res = await getWaitTakeOrder()
+    list.value = res.data || []
+  } catch (err) {
+    ElMessage.error('获取待取餐订单失败：' + err.message)
+    list.value = []
   }
 }
+
+// 取餐/送达操作
+const next = async (row) => {
+  try {
+    if(row.status == 1){
+      // 取餐：状态改为3-配送中
+      await riderTakeOrder(row.id)
+      row.status = 3
+      ElMessage.success('已取餐，开始配送')
+    }else if(row.status == 3){
+      // 送达：状态改为4-已完成
+      await completeOrder(row.id)
+      row.status = 4
+      ElMessage.success('已送达！')
+    }
+  } catch (err) {
+    ElMessage.error('操作失败：' + err.message)
+  }
+}
+
+onMounted(() => {
+  getWaitTakeOrders()
+})
+
 </script>
 
 <style scoped>

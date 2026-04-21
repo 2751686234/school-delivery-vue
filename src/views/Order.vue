@@ -21,6 +21,7 @@
         <el-card>
           <div><strong>订单号：{{ order.orderNo }}</strong></div>
           <div>金额：¥{{ order.totalPrice }}</div>
+          <div>商家：{{ order.shopName }}</div>
           <div>地址：{{ order.address }}</div>
 
           <div style="margin-top:10px;">
@@ -28,10 +29,21 @@
             <el-timeline>
               <el-timeline-item timestamp="下单成功" :type="order.status >= 1 ? 'primary' : 'info'" />
               <el-timeline-item timestamp="商家接单" :type="order.status >= 2 ? 'primary' : 'info'" />
-              <el-timeline-item timestamp="配送中" :type="order.status >= 3 ? 'primary' : 'info'" />
+              <el-timeline-item timestamp="骑手取餐/配送中" :type="order.status >= 3 ? 'primary' : 'info'" />
               <el-timeline-item timestamp="已完成" :type="order.status >= 4 ? 'success' : 'info'" />
+              <el-timeline-item timestamp="已取消" v-if="order.status ===5" type="danger" />
             </el-timeline>
           </div>
+
+          <el-button 
+            v-if="order.status === 1" 
+            type="danger" 
+            size="small" 
+            @click="handleCancelOrder(order.id)"
+            style="margin-top:10px;"
+          >
+            取消订单
+          </el-button>
         </el-card>
       </div>
     </div>
@@ -40,13 +52,27 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getUserOrderList } from '@/api/Order'
+import { getUserOrderList, cancelOrder } from '@/api/order'
+import { ElMessage } from 'element-plus'
 
 const orderList = ref([])
 const loading = ref(true)
 
-onMounted(async () => {
+// 取消订单
+const handleCancelOrder = async (orderId) => {
   try {
+    await cancelOrder(orderId)
+    ElMessage.success('订单取消成功')
+    getOrderList()
+  } catch (err) {
+    ElMessage.error('取消订单失败')
+  }
+}
+
+// 获取订单列表
+const getOrderList = async () => {
+  try {
+    loading.value = true
     const user = JSON.parse(localStorage.getItem('user'))
     const res = await getUserOrderList(user.id)
     orderList.value = res.data || []
@@ -55,6 +81,10 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+}
+
+onMounted(() => {
+  getOrderList()
 })
 </script>
 

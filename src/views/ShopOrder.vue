@@ -45,12 +45,16 @@
           </el-table-column>
           <el-table-column label="操作" align="center">
             <template #default="scope">
+              <!-- 待接单：接单/取消 -->
               <el-button type="primary" size="small" @click="handleTake(scope.row)" v-if="scope.row.status === 1">
                 接单
               </el-button>
-              <el-button size="small" @click="handleDetail(scope.row)">查看详情</el-button>
               <el-button type="danger" size="small" @click="handleCancel(scope.row)" v-if="scope.row.status === 1">
                 取消订单
+              </el-button>
+              <!-- 待取餐/配送中：查看详情 -->
+              <el-button size="small" @click="handleDetail(scope.row)" v-else>
+                查看详情
               </el-button>
             </template>
           </el-table-column>
@@ -77,50 +81,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { getShopOrderList, takeOrder, cancelShopOrder } from '@/api/order'
 
 const router = useRouter()
-// 模拟订单数据
-const orderList = ref([
-  {
-    orderNo: '20240501001',
-    username: '张三',
-    phone: '13800138000',
-    address: '学生公寓1号楼302',
-    totalPrice: 35.8,
-    createTime: '2024-05-01 12:30:00',
-    status: 1
-  },
-  {
-    orderNo: '20240501002',
-    username: '李四',
-    phone: '13900139000',
-    address: '学生公寓2号楼501',
-    totalPrice: 24.7,
-    createTime: '2024-05-01 13:10:00',
-    status: 2
-  },
-  {
-    orderNo: '20240501003',
-    username: '王五',
-    phone: '13700137000',
-    address: '学生公寓3号楼205',
-    totalPrice: 15.9,
-    createTime: '2024-05-01 14:00:00',
-    status: 3
-  },
-  {
-    orderNo: '20240501004',
-    username: '赵六',
-    phone: '13600136000',
-    address: '学生公寓1号楼408',
-    totalPrice: 42.5,
-    createTime: '2024-05-01 11:40:00',
-    status: 4
-  }
-])
+const orderList = ref([])
 const status = ref('')
 const searchNo = ref('')
 const showDetail = ref(false)
@@ -157,26 +124,6 @@ const getTagType = (status) => {
   }
 }
 
-// 搜索订单
-const searchOrder = () => {
-  let filterList = [...orderList.value]
-  if (status.value) {
-    filterList = filterList.filter(item => item.status === Number(status.value))
-  }
-  if (searchNo.value) {
-    filterList = filterList.filter(item => item.orderNo.includes(searchNo.value))
-  }
-  // 实际开发中替换为接口请求，这里模拟筛选
-  orderList.value = filterList
-  ElMessage.success('搜索成功')
-}
-
-// 接单
-const handleTake = (row) => {
-  row.status = 2
-  ElMessage.success('接单成功')
-}
-
 // 查看详情
 const handleDetail = (row) => {
   currentOrder.value = row
@@ -187,12 +134,58 @@ const handleDetail = (row) => {
   ]
   showDetail.value = true
 }
-
-// 取消订单
-const handleCancel = (row) => {
-  row.status = 5
-  ElMessage.success('取消订单成功')
+// 页面加载时获取本店订单
+const getShopOrders = async () => {
+  try {
+    const shop = JSON.parse(localStorage.getItem('shop')) // 商家登录后存储的店铺信息
+    const res = await getShopOrderList(shop.id)
+    orderList.value = res.data || []
+  } catch (err) {
+    ElMessage.error('获取订单失败：' + err.message)
+    orderList.value = []
+  }
 }
+
+// 接单（调用接口修改状态为2-待取餐）
+const handleTake = async (row) => {
+  try {
+    await takeOrder(row.id)
+    row.status = 2
+    ElMessage.success('接单成功，等待骑手取餐')
+  } catch (err) {
+    ElMessage.error('接单失败：' + err.message)
+  }
+}
+
+// 取消订单（调用接口修改状态为5-已取消）
+const handleCancel = async (row) => {
+  try {
+    await cancelShopOrder(row.id)
+    row.status = 5
+    ElMessage.success('取消订单成功')
+  } catch (err) {
+    ElMessage.error('取消订单失败：' + err.message)
+  }
+}
+
+// 搜索订单（真实接口筛选）
+const searchOrder = () => {
+  // 基于状态/订单号筛选（前端临时筛选，建议后端实现）
+  let filterList = [...orderList.value]
+  if (status.value) {
+    filterList = filterList.filter(item => item.status === Number(status.value))
+  }
+  if (searchNo.value) {
+    filterList = filterList.filter(item => item.orderNo.includes(searchNo.value))
+  }
+  orderList.value = filterList
+  ElMessage.success('搜索成功')
+}
+
+onMounted(() => {
+  getShopOrders()
+})
+
 </script>
 
 <style scoped>
