@@ -12,100 +12,114 @@
       <h2 class="text-center">商家列表</h2>
       <div class="list">
         <el-card v-for="shop in shopList" :key="shop.id" @click="selectShop(shop)">
-          <img :src="shop.pic" class="shop-img" />
+          <img :src="shop.logo" class="shop-img" />
           <div class="text-center shop-name">{{ shop.name }}</div>
         </el-card>
       </div>
 
       <div v-if="currentShop.id" class="food-section">
-        <h3 class="text-center sub-title">{{ currentShop.name }} - 菜品</h3>
+        <h3 class="text-center sub-title">{{ currentShop.name }} - 商品</h3>
         <div class="food-list">
-          <el-card v-for="food in foodList" :key="food.id">
-            <img :src="food.pic" class="food-img" />
-            <div class="text-center food-name">{{ food.name }}</div>
-            <div class="text-center food-price">¥{{ food.price }}</div>
-            <el-button type="primary" size="small" block @click="addToCart(food)">
+          <el-card v-for="goods in goodsList" :key="goods.id">
+            <img :src="goods.img" class="food-img" />
+            <div class="text-center food-name">{{ goods.name }}</div>
+            <div class="text-center food-price">¥{{ goods.price }}</div>
+            <el-button type="primary" size="small" block @click="openBuyDialog(goods)">
               加入购物车
             </el-button>
           </el-card>
         </div>
-
-        <div class="comment-section" style="margin-top:30px;">
-          <h4 class="text-center">用户评价</h4>
-          <el-card v-for="item in comments" :key="item.id" class="comment">
-            <div><strong>{{ item.user }}</strong> · 评分：{{ item.star }}⭐</div>
-            <div style="margin-top:4px;">{{ item.content }}</div>
-          </el-card>
-        </div>
       </div>
     </div>
+
+    <!-- 🔥 购买弹窗（核心） -->
+    <el-dialog v-model="showBuyDialog" title="选择购买数量" width="400px">
+      <div style="text-align:center; padding: 10px 0;">
+        <h3>{{ currentGoods.name }}</h3>
+        <p style="color:red; font-size:18px;">¥{{ currentGoods.price }}</p>
+      </div>
+
+      <el-form label-width="100px">
+        <el-form-item label="购买数量">
+          <el-input-number v-model="buyNum" :min="1" :max="99" />
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="showBuyDialog = false">取消</el-button>
+        <el-button type="primary" @click="confirmAddCart">确认加入</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { addCart } from '@/api/cart'
+import request from '@/utils/request'
 
-const shopList = ref([
-  { id:1, name:'校园汉堡店', pic:'https://picsum.photos/seed/shop1/300/200' },
-])
+const shopList = ref([])
 const currentShop = ref({})
-const foodList = ref([])
-const comments = ref([
-  { id:1, user:'小明', star:5, content:'味道很好，配送很快！' },
-  { id:2, user:'小红', star:4, content:'分量很足，下次还点！' },
-])
+const goodsList = ref([])
 
-const selectShop = (shop) => {
-  currentShop.value = shop
-  foodList.value = [
-    { id:1, name:'香辣鸡腿堡', price:15.9, pic:'https://picsum.photos/seed/f1/300/200' },
-    { id:2, name:'薯条', price:6.0, pic:'https://picsum.photos/seed/f2/300/200' },
-    { id:3, name:'可乐', price:4.0, pic:'https://picsum.photos/seed/f3/300/200' },
-  ]
+// 弹窗
+const showBuyDialog = ref(false)
+const currentGoods = ref({})
+const buyNum = ref(1)
+
+// 获取商家列表
+const getShopList = () => {
+  request.get('/shop/list').then(res => {
+    shopList.value = res.data
+  })
 }
 
-const addToCart = async (food) => {
+// 选择商家 → 加载该商家的商品
+const selectShop = async (shop) => {
+  currentShop.value = shop
+  const res = await request.get('/user/goods/shop', {
+    params: { shopId: shop.id }
+  })
+  goodsList.value = res.data
+}
+
+// 打开弹窗
+const openBuyDialog = (goods) => {
+  currentGoods.value = goods
+  buyNum.value = 1
+  showBuyDialog.value = true
+}
+
+// 确认加入购物车（带数量）
+const confirmAddCart = async () => {
   try {
-    // 1. 校验用户态
     const user = JSON.parse(localStorage.getItem('user'))
     if (!user || !user.id) {
       ElMessage.warning("请先登录！")
       return
     }
-    // 2. 校验商家选择
     if (!currentShop.value.id) {
       ElMessage.warning("请先选择商家！")
       return
     }
-    // 3. 调用加购接口
+    
     await addCart({
       userId: user.id,
       shopId: currentShop.value.id,
-      foodId: food.id,
-      price: food.price,
-      num: 1
+      goodsId: currentGoods.value.id,
+      num: buyNum.value
     })
-    ElMessage.success({ message: "已加入购物车", max:2, duration:1000 })
     
-    // 4. 可选：主动拉取最新购物车（或通知Cart.vue更新）
-    // 比如用pinia/vuex存储购物车，或localStorage临时追加
-    const cart = JSON.parse(localStorage.getItem('cart')) || []
-    cart.push({
-      foodName: food.name,
-      price: food.price,
-      num: 1,
-      shopId: currentShop.value.id,
-      userId: user.id
-    })
-    localStorage.setItem('cart', JSON.stringify(cart))
-
+    showBuyDialog.value = false
+    ElMessage.success("已加入购物车")
   } catch (e) {
-    console.error("加购失败：", e) // 打印错误日志
+    console.error("加购失败：", e)
     ElMessage.error("加入失败")
   }
 }
+
+onMounted(() => getShopList())
 </script>
 
 <style scoped>
@@ -120,5 +134,4 @@ const addToCart = async (food) => {
 .food-list { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
 .food-img { width:100%; height:100px; border-radius:8px; object-fit:cover; }
 .food-price { color:#ff4d4f; font-weight:bold; margin:4px 0; }
-.comment { margin-bottom:10px; }
 </style>

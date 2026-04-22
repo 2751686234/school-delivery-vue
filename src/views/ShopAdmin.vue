@@ -15,7 +15,6 @@
       <h2 class="page-title">商品管理</h2>
       <el-card class="card-container">
         <div class="search-add">
-          <!-- 搜索框恢复 -->
           <el-input v-model="searchKey" placeholder="搜索商品名称" style="width: 300px; margin-right: 10px;" />
           <el-button type="primary" @click="showAddDialog = true">新增商品</el-button>
         </div>
@@ -24,7 +23,6 @@
           <el-table-column prop="id" label="商品ID" align="center" />
           <el-table-column prop="name" label="商品名称" align="center" />
 
-          <!-- 商品图片 + 点击放大 -->
           <el-table-column label="商品图片" align="center">
             <template #default="scope">
               <img
@@ -55,14 +53,12 @@
           </el-table-column>
         </el-table>
 
-        <!-- 放大预览 -->
         <el-image-viewer
           v-if="showPreview"
           :url-list="[previewUrl]"
           @close="showPreview = false"
         />
 
-        <!-- 新增/编辑弹窗 -->
         <el-dialog v-model="showAddDialog" :title="isEdit ? '编辑商品' : '新增商品'" width="500px">
           <el-form :model="form" label-width="100px">
             <el-form-item label="商品名称">
@@ -75,7 +71,6 @@
               <el-input v-model="form.stock" type="number" placeholder="请输入商品库存" />
             </el-form-item>
 
-            <!-- 上传：关闭自动上传，改用手动上传 → 彻底解决跨域 -->
             <el-form-item label="商品图片">
               <el-upload
                 :auto-upload="false"
@@ -112,8 +107,6 @@ import request from '@/utils/request'
 
 const router = useRouter()
 const goodsList = ref([])
-
-// ✅ 恢复 searchKey，解决未定义报错
 const searchKey = ref('')
 
 const showAddDialog = ref(false)
@@ -121,7 +114,6 @@ const isEdit = ref(false)
 const form = ref({ name: '', price: '', stock: '', status: 1, img: '' })
 const fileList = ref([])
 
-// 图片预览
 const showPreview = ref(false)
 const previewUrl = ref('')
 const previewImg = (url) => {
@@ -129,9 +121,13 @@ const previewImg = (url) => {
   showPreview.value = true
 }
 
-// 获取商品列表
+// 从本地获取登录的商家ID
+const user = JSON.parse(localStorage.getItem('user'))
+const userId = user?.id
+
+// 获取商品列表（带 userId）
 const getGoodsList = () => {
-  request.get('/goods/list').then(res => {
+  request.get('/goods/list', { params: { userId } }).then(res => {
     goodsList.value = res.data
   })
 }
@@ -142,9 +138,7 @@ const handleManualUpload = async (uploadFile) => {
   try {
     const formData = new FormData()
     formData.append('file', uploadFile.raw)
-
     const res = await request.post('/file/upload', formData)
-
     if (res.code === 200) {
       form.value.img = res.data
       ElMessage.success('图片上传成功')
@@ -152,7 +146,7 @@ const handleManualUpload = async (uploadFile) => {
       ElMessage.error('上传失败')
     }
   } catch (err) {
-    ElMessage.error('上传失败，请检查后端')
+    ElMessage.error('上传失败')
   }
 }
 
@@ -164,27 +158,27 @@ const handleEdit = (row) => {
   showAddDialog.value = true
 }
 
-// 删除
+// 删除（带 userId）
 const handleDelete = async (id) => {
-  await request.get('/goods/delete', { params: { id } })
+  await request.get('/goods/delete', { params: { id, userId } })
   ElMessage.success('删除成功')
   getGoodsList()
 }
 
-// 上下架
+// 上下架（带 userId）
 const handleStatus = async (id) => {
-  await request.get('/goods/status', { params: { id } })
+  await request.get('/goods/status', { params: { id, userId } })
   ElMessage.success('操作成功')
   getGoodsList()
 }
 
-// 提交
+// 提交（带 userId）
 const submitForm = async () => {
   try {
     if (isEdit.value) {
-      await request.post('/goods/update', form.value)
+      await request.post('/goods/update?userId=' + userId, form.value)
     } else {
-      await request.post('/goods/add', form.value)
+      await request.post('/goods/add?userId=' + userId, form.value)
     }
     ElMessage.success(isEdit.value ? '编辑成功' : '新增成功')
 

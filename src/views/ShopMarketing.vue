@@ -28,8 +28,8 @@
                   <el-table-column prop="count" label="发放数量" align="center" />
                   <el-table-column label="操作" align="center">
                     <template #default="scope">
-                      <el-button size="mini" @click="handleEditCoupon(scope.row)">编辑</el-button>
-                      <el-button size="mini" type="danger" @click="handleDeleteCoupon(scope.row.id)">删除</el-button>
+                      <el-button size="small" @click="handleEditCoupon(scope.row)">编辑</el-button>
+                      <el-button size="small" type="danger" @click="handleDeleteCoupon(scope.row.id)">删除</el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -56,8 +56,8 @@
                   </el-table-column>
                   <el-table-column label="操作" align="center">
                     <template #default="scope">
-                      <el-button size="mini" @click="handleEditDiscount(scope.row)">编辑</el-button>
-                      <el-button size="mini" type="danger" @click="handleDeleteDiscount(scope.row.id)">删除</el-button>
+                      <el-button size="small" @click="handleEditDiscount(scope.row)">编辑</el-button>
+                      <el-button size="small" type="danger" @click="handleDeleteDiscount(scope.row.id)">删除</el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -74,9 +74,9 @@
             </el-form-item>
             <el-form-item label="优惠类型">
               <el-radio-group v-model="couponForm.type">
-                <el-radio label="满减券">满减券</el-radio>
-                <el-radio label="折扣券">折扣券</el-radio>
-                <el-radio label="无门槛券">无门槛券</el-radio>
+                <el-radio value="满减券">满减券</el-radio>
+                <el-radio value="折扣券">折扣券</el-radio>
+                <el-radio value="无门槛券">无门槛券</el-radio>
               </el-radio-group>
             </el-form-item>
             <el-form-item label="优惠金额">
@@ -106,8 +106,8 @@
             </el-form-item>
             <el-form-item label="活动状态">
               <el-radio-group v-model="discountForm.status">
-                <el-radio label="1">生效中</el-radio>
-                <el-radio label="0">已结束</el-radio>
+                <el-radio :value="1">生效中</el-radio>
+                <el-radio :value="0">已结束</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-form>
@@ -122,96 +122,132 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import request from '@/utils/request'
 
 const router = useRouter()
-// 优惠券数据
-const couponList = ref([
-  { id: 1, name: '满30减5', type: '满减券', value: 5, count: 100 },
-  { id: 2, name: '8折折扣券', type: '折扣券', value: 8, count: 50 },
-  { id: 3, name: '无门槛10元券', type: '无门槛券', value: 10, count: 30 }
-])
-// 满减活动数据
-const discountList = ref([
-  { id: 1, name: '满50减10', condition: 50, discount: 10, status: 1 },
-  { id: 2, name: '满80减20', condition: 80, discount: 20, status: 1 },
-  { id: 3, name: '满100减30', condition: 100, discount: 30, status: 0 }
-])
+const user = JSON.parse(localStorage.getItem('user'))
+const userId = user.id
 
-// 弹窗相关
+const couponList = ref([])
+const discountList = ref([])
+
+const getCoupon = async () => {
+  const res = await request.get('/shop/marketing/coupon/list', { params: { userId } })
+  couponList.value = res.data
+}
+const getDiscount = async () => {
+  const res = await request.get('/shop/marketing/discount/list', { params: { userId } })
+  discountList.value = res.data
+}
+onMounted(() => { getCoupon(); getDiscount() })
+
 const showCouponDialog = ref(false)
 const showDiscountDialog = ref(false)
 const isCouponEdit = ref(false)
 const isDiscountEdit = ref(false)
 
-// 表单数据
 const couponForm = ref({ name: '', type: '满减券', value: '', count: '' })
 const discountForm = ref({ name: '', condition: '', discount: '', status: 1 })
 
-// 退出登录
-const logout = () => {
-  localStorage.clear()
-  router.push('/login')
+// 提交优惠券
+const submitCoupon = async () => {
+  if (!couponForm.value.name || !couponForm.value.value || !couponForm.value.count) {
+    ElMessage.error('请填写完整信息')
+    return
+  }
+  try {
+    if (isCouponEdit.value) {
+      await request.post('/shop/marketing/coupon/update', {
+        userId,
+        id: couponForm.value.id,
+        name: couponForm.value.name,
+        type: couponForm.value.type,
+        value: couponForm.value.value,
+        count: couponForm.value.count
+      })
+      ElMessage.success('修改成功')
+    } else {
+      await request.post('/shop/marketing/coupon/add', {
+        userId,
+        name: couponForm.value.name,
+        type: couponForm.value.type,
+        value: couponForm.value.value,
+        count: couponForm.value.count
+      })
+      ElMessage.success('创建成功')
+    }
+    showCouponDialog.value = false
+    getCoupon()
+  } catch (e) {
+    ElMessage.error('操作失败')
+  }
 }
 
-// 优惠券操作
+// 删除优惠券
+const handleDeleteCoupon = async (id) => {
+  await request.get('/shop/marketing/coupon/delete', { params: { userId, id } })
+  ElMessage.success('删除成功')
+  getCoupon()
+}
+
+// 提交满减
+const submitDiscount = async () => {
+  if (!discountForm.value.name || !discountForm.value.condition || !discountForm.value.discount) {
+    ElMessage.error('请填写完整信息')
+    return
+  }
+  try {
+    if (isDiscountEdit.value) {
+      await request.post('/shop/marketing/discount/update', {
+        userId,
+        id: discountForm.value.id,
+        name: discountForm.value.name,
+        condition: discountForm.value.condition,
+        discount: discountForm.value.discount,
+        status: discountForm.value.status
+      })
+      ElMessage.success('修改成功')
+    } else {
+      await request.post('/shop/marketing/discount/add', {
+        userId,
+        name: discountForm.value.name,
+        condition: discountForm.value.condition,
+        discount: discountForm.value.discount,
+        status: discountForm.value.status
+      })
+      ElMessage.success('创建成功')
+    }
+    showDiscountDialog.value = false
+    getDiscount()
+  } catch (e) {
+    ElMessage.error('操作失败')
+  }
+}
+
+// 删除满减
+const handleDeleteDiscount = async (id) => {
+  await request.get('/shop/marketing/discount/delete', { params: { userId, id } })
+  ElMessage.success('删除成功')
+  getDiscount()
+}
+
 const handleEditCoupon = (row) => {
   isCouponEdit.value = true
   couponForm.value = { ...row }
   showCouponDialog.value = true
 }
-const handleDeleteCoupon = (id) => {
-  couponList.value = couponList.value.filter(item => item.id !== id)
-  ElMessage.success('优惠券删除成功')
-}
-const submitCoupon = () => {
-  if (!couponForm.value.name || !couponForm.value.value || !couponForm.value.count) {
-    ElMessage.error('请填写完整信息')
-    return
-  }
-  if (isCouponEdit.value) {
-    const index = couponList.value.findIndex(item => item.id === couponForm.value.id)
-    couponList.value[index] = { ...couponForm.value }
-    ElMessage.success('优惠券编辑成功')
-  } else {
-    couponForm.value.id = couponList.value.length + 1
-    couponList.value.push({ ...couponForm.value })
-    ElMessage.success('优惠券创建成功')
-  }
-  showCouponDialog.value = false
-  couponForm.value = { name: '', type: '满减券', value: '', count: '' }
-  isCouponEdit.value = false
-}
-
-// 满减操作
 const handleEditDiscount = (row) => {
   isDiscountEdit.value = true
   discountForm.value = { ...row }
   showDiscountDialog.value = true
 }
-const handleDeleteDiscount = (id) => {
-  discountList.value = discountList.value.filter(item => item.id !== id)
-  ElMessage.success('满减活动删除成功')
-}
-const submitDiscount = () => {
-  if (!discountForm.value.name || !discountForm.value.condition || !discountForm.value.discount) {
-    ElMessage.error('请填写完整信息')
-    return
-  }
-  if (isDiscountEdit.value) {
-    const index = discountList.value.findIndex(item => item.id === discountForm.value.id)
-    discountList.value[index] = { ...discountForm.value }
-    ElMessage.success('满减活动编辑成功')
-  } else {
-    discountForm.value.id = discountList.value.length + 1
-    discountList.value.push({ ...discountForm.value })
-    ElMessage.success('满减活动创建成功')
-  }
-  showDiscountDialog.value = false
-  discountForm.value = { name: '', condition: '', discount: '', status: 1 }
-  isDiscountEdit.value = false
+
+const logout = () => {
+  localStorage.clear()
+  router.push('/login')
 }
 </script>
 

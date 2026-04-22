@@ -20,22 +20,31 @@
               <el-form-item label="店铺名称">
                 <el-input v-model="shopForm.name" />
               </el-form-item>
+
               <el-form-item label="店铺头像">
-                <el-upload action="#" :file-list="avatarList" list-type="picture-card" style="margin-top:10px;">
+                <!-- 上传 -->
+                <el-upload
+                  :action="'http://localhost:8080/common/upload'"
+                  :file-list="avatarList"
+                  list-type="picture-card"
+                  @success="handleUploadSuccess"
+                  style="margin-top:10px;"
+                >
                   <i class="el-icon-plus"></i>
                 </el-upload>
               </el-form-item>
+
               <el-form-item label="联系电话">
                 <el-input v-model="shopForm.phone" />
               </el-form-item>
               <el-form-item label="店铺地址">
-                <el-input v-model="shopForm.address" type="textarea" rows="3" />
+                <el-input v-model="shopForm.address" type="textarea" :rows="3" />
               </el-form-item>
               <el-form-item label="营业时间">
                 <el-input v-model="shopForm.time" placeholder="如：09:00 - 22:00" />
               </el-form-item>
               <el-form-item label="店铺简介">
-                <el-input v-model="shopForm.desc" type="textarea" rows="3" />
+                <el-input v-model="shopForm.desc" type="textarea" :rows="3" />
               </el-form-item>
               <el-form-item>
                 <el-button type="primary" @click="saveShop">保存店铺信息</el-button>
@@ -73,8 +82,8 @@
               </el-form-item>
               <el-form-item label="接单设置">
                 <el-radio-group v-model="deliveryForm.autoAccept">
-                  <el-radio label="1">自动接单</el-radio>
-                  <el-radio label="0">手动接单</el-radio>
+                  <el-radio value="1">自动接单</el-radio>
+                  <el-radio value="0">手动接单</el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item>
@@ -89,43 +98,83 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import request from '@/utils/request'
 
 const router = useRouter()
 
-// 店铺信息
 const shopForm = ref({
-  name: '校园快餐店',
-  phone: '13800138000',
-  address: '学校食堂三楼',
-  time: '09:00 - 22:00',
-  desc: '主营汉堡、奶茶、小吃，快速配送'
-})
-const avatarList = ref([])
-
-// 密码
-const pwdForm = ref({
-  oldPwd: '',
-  newPwd: '',
-  confirmPwd: ''
+  name: '',
+  phone: '',
+  address: '',
+  time: '',
+  desc: '',
+  avatar: '' // 头像地址
 })
 
-// 配送设置
 const deliveryForm = ref({
-  startPrice: 20,
-  fee: 2,
-  range: 2000,
-  autoAccept: 1
+  startPrice: 0,
+  fee: 0,
+  range: '',
+  autoAccept: '0'
 })
 
-// 保存店铺
-const saveShop = () => {
-  ElMessage.success('店铺信息保存成功')
+const avatarList = ref([])
+const pwdForm = ref({ oldPwd: '', newPwd: '', confirmPwd: '' })
+
+// 上传成功
+const handleUploadSuccess = (res) => {
+  shopForm.value.avatar ='http://localhost:8080' + res.data
+  ElMessage.success('上传成功')
 }
 
-// 修改密码
+// 加载
+const loadSetting = async () => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user'))
+    const res = await request.get('/shop/setting/get', { params: { userId: user.id } })
+    const data = res.data || {}
+
+    shopForm.value = {
+      name: data.name || '',
+      phone: data.phone || '',
+      address: data.address || '',
+      time: data.time || '',
+      desc: data.desc || '',
+      avatar: data.avatar ? 'http://localhost:8080' + data.avatar : ''
+    }
+    deliveryForm.value = {
+      startPrice: data.startPrice || 0,
+      fee: data.fee || 0,
+      range: data.range || '',
+      autoAccept: data.autoAccept != null ? String(data.autoAccept) : '0' // ✅ 修复
+    }
+
+    if (data.avatar) {
+      avatarList.value = [{ url: data.avatar }]
+    }
+  } catch (e) {
+    ElMessage.error('获取配置失败')
+  }
+}
+
+// 保存（🔥 修复 500）
+const saveShop = async () => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user'))
+    await request.post('/shop/setting/save', {
+      userId: user.id, 
+      ...shopForm.value,
+      ...deliveryForm.value
+    })
+    ElMessage.success('保存成功')
+  } catch (e) {
+    ElMessage.error('保存失败')
+  }
+}
+
 const updatePwd = () => {
   if (!pwdForm.value.oldPwd || !pwdForm.value.newPwd || !pwdForm.value.confirmPwd) {
     ElMessage.error('请填写完整')
@@ -135,20 +184,14 @@ const updatePwd = () => {
     ElMessage.error('两次密码不一致')
     return
   }
-  ElMessage.success('密码修改成功，请重新登录')
+  ElMessage.success('密码修改成功')
   logout()
 }
 
-// 保存配送
-const saveDelivery = () => {
-  ElMessage.success('配送设置保存成功')
-}
+const saveDelivery = () => saveShop()
+const logout = () => { localStorage.clear(); router.push('/login') }
 
-// 退出
-const logout = () => {
-  localStorage.clear()
-  router.push('/login')
-}
+onMounted(() => loadSetting())
 </script>
 
 <style scoped>
@@ -161,7 +204,6 @@ const logout = () => {
   width: 100%;
   display: flex !important;
   justify-content: center !important;
-  text-align: center !important;
 }
 .page-container {
   width: 90%;
@@ -173,7 +215,6 @@ const logout = () => {
 .page-title {
   font-size: 22px;
   margin-bottom: 20px;
-  text-align: center;
 }
 .card-container {
   padding: 20px;

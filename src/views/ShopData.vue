@@ -92,37 +92,51 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import request from '@/utils/request' // 🔥 修复：引入 request
 
 const router = useRouter()
 
-// 数据概览
-const totalOrder = ref(528)
-const totalSales = ref(8652.8)
-const totalUser = ref(126)
+// 🔥 修复：定义所有页面使用的变量
+const totalOrder = ref(0)
+const totalSales = ref(0)
+const totalUser = ref(0)
 const averagePrice = ref(16.4)
 const repeatRate = ref(32.6)
 const totalGoodsSales = ref(1268)
-
-// 时间筛选
+const goodsRank = ref([])
 const dateType = ref('month')
 
-// 商品销量排行
-const goodsRank = ref([
-  { ranking: 1, name: '香辣鸡腿堡', sales: 268, income: 4279.2, ratio: '49.5%' },
-  { ranking: 2, name: '珍珠奶茶', sales: 186, income: 2405.4, ratio: '27.8%' },
-  { ranking: 3, name: '上校鸡块', sales: 152, income: 1352.8, ratio: '15.6%' },
-  { ranking: 4, name: '薯条', sales: 124, income: 855.6, ratio: '9.9%' },
-  { ranking: 5, name: '可乐', sales: 98, income: 480.2, ratio: '5.5%' }
-])
+// 🔥 修复：规范请求 + 赋值
+const getData = async () => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user'))
+    const res = await request.get('/shop/data/overview', {
+      params: { userId: user.id }
+    })
+    const data = res.data
+    // 安全赋值
+    totalOrder.value = data.totalOrder || 0
+    totalSales.value = data.totalSales || 0
+    totalUser.value = data.totalUser || 0
+    goodsRank.value = data.goodsRank || []
+  } catch (e) {
+    ElMessage.error('获取数据失败')
+  }
+}
 
-// 查询数据
+onMounted(() => getData())
+
+// 查询
 const searchData = () => {
-  ElMessage.success(`已切换为【${dateType.value === 'today' ? '今日' :
+  ElMessage.success(`已切换为【${
+    dateType.value === 'today' ? '今日' :
     dateType.value === 'week' ? '本周' :
-    dateType.value === 'month' ? '本月' : '本年'}】数据`)
+    dateType.value === 'month' ? '本月' : '本年'
+  }】数据`)
+  getData()
 }
 
 // 退出

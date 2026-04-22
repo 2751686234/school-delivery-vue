@@ -79,27 +79,43 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import request from '@/utils/request'
 
 const router = useRouter()
-// 财务概览数据
-const todayIncome = ref(128.5)
-const monthIncome = ref(3680.2)
-const todayOrder = ref(8)
-const monthOrder = ref(210)
 
-// 模拟财务明细
-const financeList = ref([
-  { date: '2024-05-01', orderNo: '20240501001', username: '张三', amount: 35.8, status: '已到账' },
-  { date: '2024-05-01', orderNo: '20240501002', username: '李四', amount: 24.7, status: '已到账' },
-  { date: '2024-05-01', orderNo: '20240501003', username: '王五', amount: 15.9, status: '已到账' },
-  { date: '2024-05-01', orderNo: '20240501004', username: '赵六', amount: 42.5, status: '已到账' },
-  { date: '2024-04-30', orderNo: '20240430001', username: '张三', amount: 28.6, status: '已到账' }
-])
+// 🔥 修复：把页面使用的变量全部定义（解决所有报错）
+const todayIncome = ref(0)
+const monthIncome = ref(0)
+const todayOrder = ref(0)
+const monthOrder = ref(0)
 
+const financeList = ref([])
 const dateRange = ref([])
+
+// 获取财务数据
+const getFinance = async () => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user'))
+    const res = await request.get('/shop/finance/overview', { params: { userId: user.id } })
+    const data = res.data || {}
+    
+    // 安全赋值
+    todayIncome.value = data.todayIncome ?? 0
+    monthIncome.value = data.monthIncome ?? 0
+    todayOrder.value = data.todayOrder ?? 0
+    monthOrder.value = data.monthOrder ?? 0
+  } catch (err) {
+    ElMessage.error('获取财务数据失败')
+  }
+}
+
+// 页面加载执行
+onMounted(() => {
+  getFinance()
+})
 
 // 退出登录
 const logout = () => {
@@ -114,13 +130,11 @@ const searchFinance = () => {
     return
   }
   ElMessage.success(`查询 ${dateRange.value[0]} 至 ${dateRange.value[1]} 的财务明细成功`)
-  // 实际开发中替换为接口请求，这里模拟查询
 }
 
 // 导出报表
 const exportExcel = () => {
   ElMessage.success('报表导出中，请稍后...')
-  // 实际开发中添加Excel导出逻辑
 }
 
 // 查看详情

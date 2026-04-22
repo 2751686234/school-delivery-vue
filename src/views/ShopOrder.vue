@@ -137,8 +137,12 @@ const handleDetail = (row) => {
 // 页面加载时获取本店订单
 const getShopOrders = async () => {
   try {
-    const shop = JSON.parse(localStorage.getItem('shop')) // 商家登录后存储的店铺信息
-    const res = await getShopOrderList(shop.id)
+    // 从本地获取登录的用户ID（你一定有）
+    const user = JSON.parse(localStorage.getItem('user'))
+    const userId = user.id
+
+    // 传入 userId，后端自动获取 shopId
+    const res = await getShopOrderList(userId)
     orderList.value = res.data || []
   } catch (err) {
     ElMessage.error('获取订单失败：' + err.message)

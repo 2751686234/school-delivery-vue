@@ -71,23 +71,37 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import request from '@/utils/request'
 
 const router = useRouter()
-// 模拟客户数据
-const userList = ref([
-  { id: 1, username: 'student', name: '张三', phone: '13800138000', address: '学生公寓1号楼302', orderCount: 12, totalSpend: 238.5 },
-  { id: 2, username: 'user02', name: '李四', phone: '13900139000', address: '学生公寓2号楼501', orderCount: 8, totalSpend: 156.2 },
-  { id: 3, username: 'user03', name: '王五', phone: '13700137000', address: '学生公寓3号楼205', orderCount: 15, totalSpend: 320.8 },
-  { id: 4, username: 'user04', name: '赵六', phone: '13600136000', address: '学生公寓1号楼408', orderCount: 5, totalSpend: 98.7 }
-])
+const userList = ref([])
 const searchKey = ref('')
 const showView = ref(false)
 const showMsg = ref(false)
 const currentUser = ref({})
 const msgForm = ref({ content: '' })
+
+// 获取客户列表
+const getUserList = async () => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user'))
+    const res = await request.get('/shop/user/list', {
+      params: { userId: user.id }
+    })
+    userList.value = res.data || []
+  } catch (err) {
+    ElMessage.error('获取客户失败：' + err.message)
+    userList.value = []
+  }
+}
+
+// 页面加载
+onMounted(() => {
+  getUserList()
+})
 
 // 退出登录
 const logout = () => {
