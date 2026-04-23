@@ -22,15 +22,14 @@
               </el-form-item>
 
               <el-form-item label="店铺头像">
-                <!-- 上传 -->
                 <el-upload
-                  :action="'http://localhost:8080/common/upload'"
-                  :file-list="avatarList"
+                  action="http://localhost:8080/file/upload"
                   list-type="picture-card"
-                  @success="handleUploadSuccess"
-                  style="margin-top:10px;"
+                  :on-success="handleUploadSuccess"
+                  :file-list="avatarList"
+                  :limit="1"
                 >
-                  <i class="el-icon-plus"></i>
+                  <el-icon><Plus /></el-icon>
                 </el-upload>
               </el-form-item>
 
@@ -101,7 +100,9 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 import request from '@/utils/request'
+
 
 const router = useRouter()
 
@@ -111,7 +112,7 @@ const shopForm = ref({
   address: '',
   time: '',
   desc: '',
-  avatar: '' // 头像地址
+  avatar: ''
 })
 
 const deliveryForm = ref({
@@ -126,8 +127,17 @@ const pwdForm = ref({ oldPwd: '', newPwd: '', confirmPwd: '' })
 
 // 上传成功
 const handleUploadSuccess = (res) => {
-  shopForm.value.avatar = res.data
-  ElMessage.success('上传成功')
+  if (res.code === 200) {
+    const url = res.data
+    if (url.startsWith('http://localhost:8080')) {
+      shopForm.value.avatar = url.replace('http://localhost:8080', '')
+    } else {
+      shopForm.value.avatar = url
+    }
+    ElMessage.success('上传成功')
+  } else {
+    ElMessage.error(res.msg || '上传失败')
+  }
 }
 
 // 加载
@@ -143,7 +153,7 @@ const loadSetting = async () => {
       address: data.address || '',
       time: data.time || '',
       desc: data.desc || '',
-      avatar: data.avatar ? 'http://localhost:8080' + data.avatar : ''
+      avatar: data.avatar || ''
     }
     deliveryForm.value = {
       startPrice: data.startPrice || 0,
@@ -152,23 +162,44 @@ const loadSetting = async () => {
       autoAccept: data.autoAccept != null ? String(data.autoAccept) : '0'
     }
 
+    // 显示用的图片列表
     if (data.avatar) {
-      avatarList.value = [{ url: 'http://localhost:8080' + data.avatar }]
+      avatarList.value = [{ 
+        url: data.avatar.startsWith('http') 
+          ? data.avatar 
+          : 'http://localhost:8080' + data.avatar 
+      }]
     }
   } catch (e) {
     ElMessage.error('获取配置失败')
   }
 }
 
-// 保存（🔥 修复 500）
+// 保存时确保只存相对路径
 const saveShop = async () => {
   try {
     const user = JSON.parse(localStorage.getItem('user'))
+
+    // 确保avatar是相对路径
+    let finalAvatar = shopForm.value.avatar
+    if (finalAvatar.startsWith('http://localhost:8080')) {
+      finalAvatar = finalAvatar.replace('http://localhost:8080', '')
+    }
+
     await request.post('/shop/setting/save', {
-      userId: user.id, 
-      ...shopForm.value,
-      ...deliveryForm.value
+      userId: user.id,
+      name: shopForm.value.name,
+      phone: shopForm.value.phone,
+      address: shopForm.value.address,
+      time: shopForm.value.time,
+      desc: shopForm.value.desc,
+      avatar: finalAvatar,
+      startPrice: deliveryForm.value.startPrice,
+      fee: deliveryForm.value.fee,
+      range: deliveryForm.value.range,
+      autoAccept: deliveryForm.value.autoAccept
     })
+
     ElMessage.success('保存成功')
   } catch (e) {
     ElMessage.error('保存失败')
