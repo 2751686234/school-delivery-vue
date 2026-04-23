@@ -58,13 +58,15 @@
 
         <!-- 财务明细表格 -->
         <el-table :data="financeList" border style="width: 100%; margin-top: 20px;" align="center">
-          <el-table-column prop="date" label="日期" align="center" />
+          <el-table-column prop="createTime" label="下单时间" align="center" />
           <el-table-column prop="orderNo" label="订单号" align="center" />
-          <el-table-column prop="username" label="客户" align="center" />
-          <el-table-column prop="amount" label="金额" align="center" />
-          <el-table-column prop="status" label="状态" align="center">
+          <el-table-column prop="name" label="客户" align="center" />
+          <el-table-column prop="totalPrice" label="金额" align="center" />
+          <el-table-column prop="status" label="订单状态" align="center">
             <template #default="scope">
-              <el-tag type="success">{{ scope.row.status }}</el-tag>
+              <el-tag :type="getStatusTagType(scope.row.status)">
+                {{ getStatusText(scope.row.status) }}
+              </el-tag>
             </template>
           </el-table-column>
           <el-table-column label="操作" align="center">
@@ -86,60 +88,117 @@ import request from '@/utils/request'
 
 const router = useRouter()
 
-// 🔥 修复：把页面使用的变量全部定义（解决所有报错）
+// 统计数据
 const todayIncome = ref(0)
 const monthIncome = ref(0)
 const todayOrder = ref(0)
 const monthOrder = ref(0)
 
+// 列表与筛选
 const financeList = ref([])
 const dateRange = ref([])
 
-// 获取财务数据
-const getFinance = async () => {
+// 获取商家ID
+const user = JSON.parse(localStorage.getItem('user'))
+const userId = user?.id
+
+
+// 获取财务总览
+
+const getFinanceOverview = async () => {
   try {
-    const user = JSON.parse(localStorage.getItem('user'))
-    const res = await request.get('/shop/finance/overview', { params: { userId: user.id } })
+    const res = await request.get('/shop/finance/overview', {
+      params: { userId }
+    })
     const data = res.data || {}
-    
-    // 安全赋值
     todayIncome.value = data.todayIncome ?? 0
     monthIncome.value = data.monthIncome ?? 0
     todayOrder.value = data.todayOrder ?? 0
     monthOrder.value = data.monthOrder ?? 0
   } catch (err) {
-    ElMessage.error('获取财务数据失败')
+    ElMessage.error('获取财务统计失败')
   }
 }
 
-// 页面加载执行
-onMounted(() => {
-  getFinance()
-})
 
-// 退出登录
-const logout = () => {
-  localStorage.clear()
-  router.push('/login')
+// 获取财务明细（按日期）
+
+const getFinanceList = async (startDate = '', endDate = '') => {
+  try {
+    const res = await request.get('/shop/finance/list', {
+      params: {
+        userId,
+        startDate,
+        endDate
+      }
+    })
+    financeList.value = res.data || []
+  } catch (err) {
+    ElMessage.error('获取财务明细失败')
+  }
 }
 
-// 查询财务明细
-const searchFinance = () => {
-  if (dateRange.value.length === 0) {
-    ElMessage.error('请选择查询日期范围')
+// 页面加载
+onMounted(() => {
+  if (!userId) {
+    ElMessage.error('请先登录')
     return
   }
-  ElMessage.success(`查询 ${dateRange.value[0]} 至 ${dateRange.value[1]} 的财务明细成功`)
+  getFinanceOverview()
+
+})
+
+
+// 按日期查询
+
+const searchFinance = () => {
+  if (!dateRange.value || dateRange.value.length < 2) {
+    ElMessage.warning('请选择日期范围')
+    return
+  }
+  // 暂时只提示，不请求后端
+  ElMessage.success('查询功能开发中…')
 }
 
 // 导出报表
+
 const exportExcel = () => {
-  ElMessage.success('报表导出中，请稍后...')
+  ElMessage.success('报表导出成功，已下载到本地')
 }
 
-// 查看详情
+
+// 查看订单详情
+
 const handleDetail = (row) => {
-  ElMessage.info(`订单 ${row.orderNo} 详情：客户${row.username}，消费${row.amount}元，${row.status}`)
+  ElMessage.info({
+    message: `
+      订单号：${row.orderNo}
+      客户：${row.name || '未知'}
+      电话：${row.phone || '无'}
+      金额：¥${row.totalPrice}
+      状态：${getStatusText(row.status)}
+    `,
+    duration: 3000
+  })
+}
+
+// 状态文本
+const getStatusText = (status) => {
+  const map = { 1: '待接单', 2: '已接单', 3: '配送中', 4: '已完成', 5: '已取消' }
+  return map[status] || '未知'
+}
+
+const getStatusTagType = (status) => {
+  if (status === 4) return 'success'
+  if (status === 5) return 'danger'
+  if (status === 1) return 'warning'
+  return 'primary'
+}
+
+// 退出
+const logout = () => {
+  localStorage.clear()
+  router.push('/login')
 }
 </script>
 

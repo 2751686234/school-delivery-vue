@@ -20,9 +20,10 @@
       <div v-else v-for="order in orderList" :key="order.id" class="order-item">
         <el-card>
           <div><strong>订单号：{{ order.orderNo }}</strong></div>
-          <div>金额：¥{{ order.totalPrice }}</div>
           <div>商家：{{ order.shopName }}</div>
+          <div>金额：¥{{ order.totalPrice }}</div>
           <div>地址：{{ order.address }}</div>
+          <div>下单时间：{{ formatTime(order.createTime) }}</div>
 
           <div style="margin-top:10px;">
             <div style="font-weight:bold;margin-bottom:6px;">配送进度</div>
@@ -35,15 +36,23 @@
             </el-timeline>
           </div>
 
-          <el-button 
-            v-if="order.status === 1" 
-            type="danger" 
-            size="small" 
-            @click="handleCancelOrder(order.id)"
-            style="margin-top:10px;"
-          >
-            取消订单
-          </el-button>
+          <div style="margin-top:10px;display:flex;gap:8px;">
+            <el-button 
+              v-if="order.status === 1" 
+              type="danger" 
+              size="small" 
+              @click="handleCancelOrder(order.id)"
+            >
+              取消订单
+            </el-button>
+            <el-button 
+              type="info" 
+              size="small" 
+              @click="handleUserDeleteOrder(order.id)"
+            >
+              删除订单记录
+            </el-button>
+          </div>
         </el-card>
       </div>
     </div>
@@ -54,11 +63,11 @@
 import { ref, onMounted } from 'vue'
 import { getUserOrderList, cancelOrder } from '@/api/order'
 import { ElMessage } from 'element-plus'
+import request from '@/utils/request'
 
 const orderList = ref([])
 const loading = ref(true)
 
-// 取消订单
 const handleCancelOrder = async (orderId) => {
   try {
     await cancelOrder(orderId)
@@ -69,7 +78,16 @@ const handleCancelOrder = async (orderId) => {
   }
 }
 
-// 获取订单列表
+const handleUserDeleteOrder = async (orderId) => {
+  try {
+    await request.post('/order/user/delete', { orderId })
+    ElMessage.success('订单记录已删除')
+    getOrderList()
+  } catch (err) {
+    ElMessage.error('删除失败')
+  }
+}
+
 const getOrderList = async () => {
   try {
     loading.value = true
@@ -81,6 +99,12 @@ const getOrderList = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// 格式化时间
+const formatTime = (time) => {
+  if (!time) return ''
+  return new Date(time).toLocaleString()
 }
 
 onMounted(() => {

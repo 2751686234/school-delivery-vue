@@ -14,7 +14,6 @@
     <div class="page-container">
       <h2 class="page-title">订单管理</h2>
       <el-card class="card-container">
-        <!-- 订单筛选 -->
         <div class="filter">
           <el-select v-model="status" placeholder="筛选订单状态" style="width: 180px; margin-right: 10px;">
             <el-option label="全部订单" value=""></el-option>
@@ -28,14 +27,17 @@
           <el-button type="primary" @click="searchOrder">搜索</el-button>
         </div>
 
-        <!-- 订单表格 -->
         <el-table :data="orderList" border style="width: 100%; margin-top: 20px;" align="center">
           <el-table-column prop="orderNo" label="订单号" align="center" />
-          <el-table-column prop="username" label="客户姓名" align="center" />
+          <el-table-column prop="name" label="客户姓名" align="center" />
           <el-table-column prop="phone" label="客户电话" align="center" />
           <el-table-column prop="address" label="配送地址" align="center" />
           <el-table-column prop="totalPrice" label="订单金额" align="center" />
-          <el-table-column prop="createTime" label="下单时间" align="center" />
+          <el-table-column label="下单时间" align="center">
+            <template #default="scope">
+              {{ formatTime(scope.row.createTime) }}
+            </template>
+          </el-table-column>
           <el-table-column prop="status" label="订单状态" align="center">
             <template #default="scope">
               <el-tag :type="getTagType(scope.row.status)">
@@ -45,14 +47,12 @@
           </el-table-column>
           <el-table-column label="操作" align="center">
             <template #default="scope">
-              <!-- 待接单：接单/取消 -->
               <el-button type="primary" size="small" @click="handleTake(scope.row)" v-if="scope.row.status === 1">
                 接单
               </el-button>
               <el-button type="danger" size="small" @click="handleCancel(scope.row)" v-if="scope.row.status === 1">
                 取消订单
               </el-button>
-              <!-- 待取餐/配送中：查看详情 -->
               <el-button size="small" @click="handleDetail(scope.row)" v-else>
                 查看详情
               </el-button>
@@ -60,7 +60,6 @@
           </el-table-column>
         </el-table>
 
-        <!-- 订单详情弹窗 -->
         <el-dialog v-model="showDetail" title="订单详情" width="600px">
           <el-table :data="orderDetail" border style="width: 100%;" align="center">
             <el-table-column prop="name" label="商品名称" align="center" />
@@ -94,13 +93,11 @@ const showDetail = ref(false)
 const orderDetail = ref([])
 const currentOrder = ref({})
 
-// 退出登录
 const logout = () => {
   localStorage.clear()
   router.push('/login')
 }
 
-// 获取订单状态文本
 const getStatusText = (status) => {
   switch (status) {
     case 1: return '待接单'
@@ -112,7 +109,6 @@ const getStatusText = (status) => {
   }
 }
 
-// 获取标签类型
 const getTagType = (status) => {
   switch (status) {
     case 1: return 'warning'
@@ -124,26 +120,23 @@ const getTagType = (status) => {
   }
 }
 
-// 查看详情
 const handleDetail = (row) => {
   currentOrder.value = row
-  // 模拟订单详情
   orderDetail.value = [
     { name: '香辣鸡腿堡', num: 2, price: 15.9, total: 31.8 },
     { name: '珍珠奶茶', num: 1, price: 12.9, total: 12.9 }
   ]
   showDetail.value = true
 }
-// 获取店铺订单
+
 const getShopOrders = async () => {
   try {
     const user = JSON.parse(localStorage.getItem('user'))
-    const res = await getShopOrderList(user.id) // 👈 传商家 userId
+    const res = await getShopOrderList(user.id)
     orderList.value = res.data || []
-  } catch (err) { }
+  } catch (err) {}
 }
 
-// 接单（调用接口修改状态为2-待取餐）
 const handleTake = async (row) => {
   try {
     await takeOrder(row.id)
@@ -154,7 +147,6 @@ const handleTake = async (row) => {
   }
 }
 
-// 取消订单（调用接口修改状态为5-已取消）
 const handleCancel = async (row) => {
   try {
     await cancelShopOrder(row.id)
@@ -165,9 +157,7 @@ const handleCancel = async (row) => {
   }
 }
 
-// 搜索订单（真实接口筛选）
 const searchOrder = () => {
-  // 基于状态/订单号筛选（前端临时筛选，建议后端实现）
   let filterList = [...orderList.value]
   if (status.value) {
     filterList = filterList.filter(item => item.status === Number(status.value))
@@ -176,13 +166,16 @@ const searchOrder = () => {
     filterList = filterList.filter(item => item.orderNo.includes(searchNo.value))
   }
   orderList.value = filterList
-  ElMessage.success('搜索成功')
+}
+
+const formatTime = (time) => {
+  if (!time) return ''
+  return new Date(time).toLocaleString()
 }
 
 onMounted(() => {
   getShopOrders()
 })
-
 </script>
 
 <style scoped>

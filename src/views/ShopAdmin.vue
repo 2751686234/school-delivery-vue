@@ -34,7 +34,7 @@
           </el-table-column>
 
           <el-table-column prop="price" label="商品价格" align="center" />
-          <el-table-column prop="stock" label="库存" align="center" />
+          
           <el-table-column prop="status" label="状态" align="center">
             <template #default="scope">
               <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'">
@@ -42,6 +42,7 @@
               </el-tag>
             </template>
           </el-table-column>
+          
           <el-table-column label="操作" align="center">
             <template #default="scope">
               <el-button type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
@@ -66,9 +67,6 @@
             </el-form-item>
             <el-form-item label="商品价格">
               <el-input v-model="form.price" type="number" placeholder="请输入商品价格" />
-            </el-form-item>
-            <el-form-item label="商品库存">
-              <el-input v-model="form.stock" type="number" placeholder="请输入商品库存" />
             </el-form-item>
 
             <el-form-item label="商品图片">
@@ -111,7 +109,7 @@ const searchKey = ref('')
 
 const showAddDialog = ref(false)
 const isEdit = ref(false)
-const form = ref({ name: '', price: '', stock: '', status: 1, img: '' })
+const form = ref({ name: '', price: '', status: 1, img: '' })
 const fileList = ref([])
 
 const showPreview = ref(false)
@@ -121,11 +119,9 @@ const previewImg = (url) => {
   showPreview.value = true
 }
 
-// 从本地获取登录的商家ID
 const user = JSON.parse(localStorage.getItem('user'))
 const userId = user?.id
 
-// 获取商品列表（带 userId）
 const getGoodsList = () => {
   request.get('/goods/list', { params: { userId } }).then(res => {
     goodsList.value = res.data
@@ -133,7 +129,6 @@ const getGoodsList = () => {
 }
 onMounted(() => getGoodsList())
 
-// 手动上传图片
 const handleManualUpload = async (uploadFile) => {
   try {
     const formData = new FormData()
@@ -150,7 +145,6 @@ const handleManualUpload = async (uploadFile) => {
   }
 }
 
-// 编辑
 const handleEdit = (row) => {
   isEdit.value = true
   form.value = { ...row }
@@ -158,21 +152,18 @@ const handleEdit = (row) => {
   showAddDialog.value = true
 }
 
-// 删除（带 userId）
 const handleDelete = async (id) => {
   await request.get('/goods/delete', { params: { id, userId } })
   ElMessage.success('删除成功')
   getGoodsList()
 }
 
-// 上下架（带 userId）
 const handleStatus = async (id) => {
   await request.get('/goods/status', { params: { id, userId } })
   ElMessage.success('操作成功')
   getGoodsList()
 }
 
-// 提交（带 userId）
 const submitForm = async () => {
   try {
     if (isEdit.value) {
@@ -183,7 +174,7 @@ const submitForm = async () => {
     ElMessage.success(isEdit.value ? '编辑成功' : '新增成功')
 
     showAddDialog.value = false
-    form.value = { name: '', price: '', stock: '', status: 1, img: '' }
+    form.value = { name: '', price: '', status: 1, img: '' }
     fileList.value = []
     isEdit.value = false
     getGoodsList()
@@ -192,7 +183,6 @@ const submitForm = async () => {
   }
 }
 
-// 退出
 const logout = () => {
   localStorage.clear()
   router.push('/login')

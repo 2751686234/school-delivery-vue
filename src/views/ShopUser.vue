@@ -15,7 +15,13 @@
       <h2 class="page-title">客户管理</h2>
       <el-card class="card-container">
         <!-- 客户搜索 -->
-        <el-input v-model="searchKey" placeholder="搜索客户姓名/手机号" style="width: 300px; margin-bottom: 20px;" />
+        <el-input 
+          v-model="searchKey" 
+          placeholder="搜索客户姓名/手机号" 
+          style="width: 300px; margin-bottom: 20px;"
+          @keyup.enter="getUserList"
+          clearable
+        />
 
         <!-- 客户表格 -->
         <el-table :data="userList" border style="width: 100%;" align="center">
@@ -84,12 +90,15 @@ const showMsg = ref(false)
 const currentUser = ref({})
 const msgForm = ref({ content: '' })
 
-// 获取客户列表
+// 获取客户列表（支持搜索）
 const getUserList = async () => {
   try {
     const user = JSON.parse(localStorage.getItem('user'))
     const res = await request.get('/shop/user/list', {
-      params: { userId: user.id }
+      params: { 
+        userId: user.id,
+        keyword: searchKey.value  // 🔥 搜索关键词传给后端
+      }
     })
     userList.value = res.data || []
   } catch (err) {
