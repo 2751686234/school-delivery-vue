@@ -35,13 +35,13 @@
           <el-col :span="4"><el-card shadow="hover" class="data-card"><div class="title">商品销量</div><div class="value">{{ totalGoodsSales }}</div></el-card></el-col>
         </el-row>
 
-        <!-- 🔥 近7日销量趋势折线图 -->
+        <!--  近7日销量趋势折线图 -->
         <el-card style="margin-bottom:20px;padding:20px">
           <div class="chart-title">近7日销量趋势</div>
           <div id="trendChart" style="width:100%;height:360px"></div>
         </el-card>
 
-        <!-- 🔥 商品销量排行 TOP10 -->
+        <!-- 商品销量排行 TOP10 -->
         <el-card style="padding:20px">
           <div class="chart-title">商品销量排行 TOP10</div>
           <el-table :data="goodsRank" border style="width:100%;margin-top:10px" align="center">
@@ -106,7 +106,7 @@ const getData = async () => {
   } catch (e) { ElMessage.error('获取数据失败') }
 }
 
-// 🔥 绘制折线图
+// 绘制折线图
 const renderChart = (trend) => {
   const dom = document.getElementById('trendChart')
   if (!dom) return

@@ -50,6 +50,8 @@
             range-separator="至"
             start-placeholder="开始日期"
             end-placeholder="结束日期"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
             style="width: 300px; margin-right: 10px;"
           />
           <el-button type="primary" @click="searchFinance">查询</el-button>
@@ -102,9 +104,7 @@ const dateRange = ref([])
 const user = JSON.parse(localStorage.getItem('user'))
 const userId = user?.id
 
-
 // 获取财务总览
-
 const getFinanceOverview = async () => {
   try {
     const res = await request.get('/shop/finance/overview', {
@@ -120,55 +120,48 @@ const getFinanceOverview = async () => {
   }
 }
 
-
-// 获取财务明细（按日期）
-
+// 获取财务明细
 const getFinanceList = async (startDate = '', endDate = '') => {
   try {
-    const res = await request.get('/shop/finance/list', {
-      params: {
-        userId,
-        startDate,
-        endDate
-      }
-    })
+    const params = { userId }
+    if (startDate && endDate) {
+      params.startDate = startDate
+      params.endDate = endDate
+    }
+    const res = await request.get('/shop/finance/list', { params })
     financeList.value = res.data || []
   } catch (err) {
     ElMessage.error('获取财务明细失败')
   }
 }
 
-// 页面加载
+// 页面初始化
 onMounted(() => {
   if (!userId) {
     ElMessage.error('请先登录')
     return
   }
   getFinanceOverview()
-
+  getFinanceList()
 })
 
-
-// 按日期查询
-
+// 日期查询
 const searchFinance = () => {
   if (!dateRange.value || dateRange.value.length < 2) {
     ElMessage.warning('请选择日期范围')
     return
   }
-  // 暂时只提示，不请求后端
-  ElMessage.success('查询功能开发中…')
+  const [start, end] = dateRange.value
+  getFinanceList(start, end)
+  ElMessage.success('查询成功')
 }
 
 // 导出报表
-
 const exportExcel = () => {
   ElMessage.success('报表导出成功，已下载到本地')
 }
 
-
 // 查看订单详情
-
 const handleDetail = (row) => {
   ElMessage.info({
     message: `
@@ -177,6 +170,7 @@ const handleDetail = (row) => {
       电话：${row.phone || '无'}
       金额：¥${row.totalPrice}
       状态：${getStatusText(row.status)}
+      下单时间：${row.createTime}
     `,
     duration: 3000
   })
@@ -195,7 +189,7 @@ const getStatusTagType = (status) => {
   return 'primary'
 }
 
-// 退出
+// 退出登录
 const logout = () => {
   localStorage.clear()
   router.push('/login')
@@ -212,14 +206,12 @@ const logout = () => {
   width: 100%;
   display: flex !important;
   justify-content: center !important;
-  text-align: center !important;
 }
 .page-container {
   width: 90%;
   max-width: 1200px;
   margin: 0 auto;
   padding: 30px 0;
-  text-align: center;
 }
 .page-title {
   font-size: 22px;
