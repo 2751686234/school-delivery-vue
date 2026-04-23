@@ -3,7 +3,7 @@
     <el-menu mode="horizontal" class="nav-bar" v-model="activeMenu" router>
       <el-menu-item index="/admin">首页</el-menu-item>
       <el-menu-item index="/admin-user">用户管理</el-menu-item>
-      <el-menu-item index="/admin-shop">商家管理</el-menu-item>
+      <el-menu-item index="/admin-shop">商店管理</el-menu-item>
       <el-menu-item index="/admin-goods">商品管理</el-menu-item>
       <el-menu-item index="/admin-order">订单管理</el-menu-item>
       <el-menu-item index="/admin-finance">财务管理</el-menu-item>
@@ -26,7 +26,7 @@
         </el-col>
         <el-col :span="6">
           <el-card class="overview-card" shadow="hover">
-            <div class="label">总商家数</div>
+            <div class="label">总商店数</div>
             <div class="num">{{ stats.shopCount }}</div>
           </el-card>
         </el-col>
@@ -55,7 +55,7 @@
         <el-col :span="8">
           <el-card class="func-card" @click="go('/admin-shop')">
             <div class="icon">🏪</div>
-            <div class="text">商家管理</div>
+            <div class="text">商店管理</div>
           </el-card>
         </el-col>
         <el-col :span="8">

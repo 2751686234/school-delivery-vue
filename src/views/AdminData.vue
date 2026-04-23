@@ -3,7 +3,7 @@
   <el-menu mode="horizontal" class="nav-bar">
     <el-menu-item @click="$router.push('/admin')">首页</el-menu-item>
     <el-menu-item @click="$router.push('/admin-user')">用户管理</el-menu-item>
-    <el-menu-item @click="$router.push('/admin-shop')">商家管理</el-menu-item>
+    <el-menu-item @click="$router.push('/admin-shop')">商店管理</el-menu-item>
     <el-menu-item @click="$router.push('/admin-goods')">商品管理</el-menu-item>
     <el-menu-item @click="$router.push('/admin-order')">订单管理</el-menu-item>
     <el-menu-item @click="$router.push('/admin-finance')">财务管理</el-menu-item>
