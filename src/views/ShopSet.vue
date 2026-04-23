@@ -54,13 +54,13 @@
           <el-tab-pane label="账号安全">
             <el-form :model="pwdForm" label-width="120px" style="max-width:500px; margin:20px auto;">
               <el-form-item label="原密码">
-                <el-input v-model="pwdForm.oldPwd" type="password" />
+                <el-input v-model="pwdForm.oldPwd" type="password" placeholder="请输入当前密码" />
               </el-form-item>
               <el-form-item label="新密码">
-                <el-input v-model="pwdForm.newPwd" type="password" />
+                <el-input v-model="pwdForm.newPwd" type="password" placeholder="6-16位字母/数字" />
               </el-form-item>
               <el-form-item label="确认新密码">
-                <el-input v-model="pwdForm.confirmPwd" type="password" />
+                <el-input v-model="pwdForm.confirmPwd" type="password" placeholder="再次输入新密码" />
               </el-form-item>
               <el-form-item>
                 <el-button type="primary" @click="updatePwd">修改密码</el-button>
@@ -103,7 +103,6 @@ import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import request from '@/utils/request'
 
-
 const router = useRouter()
 
 const shopForm = ref({
@@ -125,22 +124,18 @@ const deliveryForm = ref({
 const avatarList = ref([])
 const pwdForm = ref({ oldPwd: '', newPwd: '', confirmPwd: '' })
 
-// 上传成功
+// 上传头像
 const handleUploadSuccess = (res) => {
   if (res.code === 200) {
     const url = res.data
-    if (url.startsWith('http://localhost:8080')) {
-      shopForm.value.avatar = url.replace('http://localhost:8080', '')
-    } else {
-      shopForm.value.avatar = url
-    }
+    shopForm.value.avatar = url.startsWith('http://localhost:8080') ? url.replace('http://localhost:8080', '') : url
     ElMessage.success('上传成功')
   } else {
     ElMessage.error(res.msg || '上传失败')
   }
 }
 
-// 加载
+// 加载配置
 const loadSetting = async () => {
   try {
     const user = JSON.parse(localStorage.getItem('user'))
@@ -162,12 +157,9 @@ const loadSetting = async () => {
       autoAccept: data.autoAccept != null ? String(data.autoAccept) : '0'
     }
 
-    // 显示用的图片列表
     if (data.avatar) {
-      avatarList.value = [{ 
-        url: data.avatar.startsWith('http') 
-          ? data.avatar 
-          : 'http://localhost:8080' + data.avatar 
+      avatarList.value = [{
+        url: data.avatar.startsWith('http') ? data.avatar : 'http://localhost:8080' + data.avatar
       }]
     }
   } catch (e) {
@@ -175,16 +167,12 @@ const loadSetting = async () => {
   }
 }
 
-// 保存时确保只存相对路径
+// 保存店铺信息
 const saveShop = async () => {
   try {
     const user = JSON.parse(localStorage.getItem('user'))
-
-    // 确保avatar是相对路径
-    let finalAvatar = shopForm.value.avatar
-    if (finalAvatar.startsWith('http://localhost:8080')) {
-      finalAvatar = finalAvatar.replace('http://localhost:8080', '')
-    }
+    let avatar = shopForm.value.avatar
+    if (avatar.startsWith('http://localhost:8080')) avatar = avatar.replace('http://localhost:8080', '')
 
     await request.post('/shop/setting/save', {
       userId: user.id,
@@ -193,35 +181,56 @@ const saveShop = async () => {
       address: shopForm.value.address,
       time: shopForm.value.time,
       desc: shopForm.value.desc,
-      avatar: finalAvatar,
+      avatar: avatar,
       startPrice: deliveryForm.value.startPrice,
       fee: deliveryForm.value.fee,
       range: deliveryForm.value.range,
       autoAccept: deliveryForm.value.autoAccept
     })
-
     ElMessage.success('保存成功')
   } catch (e) {
     ElMessage.error('保存失败')
   }
 }
 
-const updatePwd = () => {
-  if (!pwdForm.value.oldPwd || !pwdForm.value.newPwd || !pwdForm.value.confirmPwd) {
+const updatePwd = async () => {
+  const { oldPwd, newPwd, confirmPwd } = pwdForm.value
+  if (!oldPwd || !newPwd || !confirmPwd) {
     ElMessage.error('请填写完整')
     return
   }
-  if (pwdForm.value.newPwd !== pwdForm.value.confirmPwd) {
+  if (newPwd !== confirmPwd) {
     ElMessage.error('两次密码不一致')
     return
   }
-  ElMessage.success('密码修改成功')
-  logout()
+  if (newPwd.length < 6 || newPwd.length > 16) {
+    ElMessage.error('新密码长度 6-16 位')
+    return
+  }
+
+  try {
+    const user = JSON.parse(localStorage.getItem('user'))
+    const res = await request.post('/user/update-pwd', {
+      id: user.id,
+      oldPwd,
+      newPwd
+    })
+
+    if (res.code === 200) {
+      ElMessage.success('密码修改成功，请重新登录')
+      logout()
+    } else {
+
+      ElMessage.error(res.msg)
+    }
+
+  } catch (err) {
+    ElMessage.error("原密码不正确")
+  }
 }
 
 const saveDelivery = () => saveShop()
 const logout = () => { localStorage.clear(); router.push('/login') }
-
 onMounted(() => loadSetting())
 </script>
 
