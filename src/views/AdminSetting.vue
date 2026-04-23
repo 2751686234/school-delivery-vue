@@ -17,22 +17,34 @@
     <h2 class="title">系统设置</h2>
     <el-card>
       <el-tabs type="border-card">
+
         <el-tab-pane label="基础设置">
           <el-form :model="form" label-width="150px" style="max-width:700px;margin:20px auto">
             <el-form-item label="平台名称">
               <el-input v-model="form.name" />
             </el-form-item>
+
             <el-form-item label="平台LOGO">
-              <el-upload action="#" :file-list="logoList">
-                <el-button type="primary">上传</el-button>
+              <el-upload
+                action="http://localhost:8080/file/upload"
+                :show-file-list="false"
+                @success="uploadSuccess"
+              >
+                <el-button type="primary">点击上传LOGO</el-button>
               </el-upload>
+              <div v-if="form.logo" style="margin-top:10px">
+                <el-image :src="form.logo" style="width:100px;height:100px;object-fit:cover" />
+              </div>
             </el-form-item>
+
             <el-form-item label="客服电话">
               <el-input v-model="form.servicePhone" />
             </el-form-item>
+
             <el-form-item label="平台抽成比例（%）">
               <el-input v-model="form.rate" type="number" />
             </el-form-item>
+
             <el-form-item>
               <el-button type="primary" @click="save">保存设置</el-button>
             </el-form-item>
@@ -57,10 +69,16 @@
         </el-tab-pane>
 
         <el-tab-pane label="系统日志">
-          <div style="padding:20px;text-align:center">
-            登录日志 / 操作日志 / 异常日志 查看区域
+          <div style="padding: 20px">
+            <el-table :data="logList" border>
+              <el-table-column label="管理员" prop="username" />
+              <el-table-column label="类型" prop="type" />
+              <el-table-column label="内容" prop="content" />
+              <el-table-column label="时间" prop="create_time" />
+            </el-table>
           </div>
         </el-tab-pane>
+
       </el-tabs>
     </el-card>
   </div>
@@ -68,21 +86,75 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-const router = useRouter()
-const form = ref({ name:'校园外卖平台', servicePhone:'400-123-8888', rate:15 })
-const logoList = ref([])
-const pwd = ref({ old:'', new:'', confirm:'' })
+import request from '@/utils/request'
 
-const logout = () => { localStorage.clear(); router.push('/login') }
-const save = () => ElMessage.success('系统设置已保存')
-const updatePwd = () => {
-  if(!pwd.old || !pwd.new || !pwd.confirm) return ElMessage.error('请填写完整')
-  if(pwd.new !== pwd.confirm) return ElMessage.error('两次密码不一致')
-  ElMessage.success('密码修改成功，请重新登录')
-  logout()
+const router = useRouter()
+const user = JSON.parse(localStorage.getItem("user"))
+const logList = ref([])
+const form = ref({ name: '', logo: '', servicePhone: '', rate: 15 })
+const pwd = ref({ old: '', new: '', confirm: '' })
+
+// 加载配置
+onMounted(() => {
+  request.get('/admin/config/get').then(res => {
+    form.value.name = res.data.platform_name
+    form.value.logo = res.data.logo
+    form.value.servicePhone = res.data.service_phone
+    form.value.rate = res.data.platform_rate
+  })
+  // 加载日志
+  request.get('/admin/log/list').then(res => {
+    logList.value = res.data
+  })
+})
+
+// 上传LOGO
+const uploadSuccess = (res) => {
+  if (res.code === 200) {
+    form.value.logo = res.data
+    ElMessage.success('LOGO上传成功')
+  }
+}
+
+// 保存配置
+const save = async () => {
+  await request.post('/admin/config/save', form.value)
+  ElMessage.success('系统设置已保存')
+}
+
+// 修改密码
+const updatePwd = async () => {
+  if (!pwd.value.old || !pwd.value.new || !pwd.value.confirm) {
+    ElMessage.error('请填写完整')
+    return
+  }
+  if (pwd.value.new !== pwd.value.confirm) {
+    ElMessage.error('两次密码不一致')
+    return
+  }
+  try {
+    const res = await request.post('/admin/setting/update-pwd', {
+      id: user.id,
+      oldPwd: pwd.value.old,
+      newPwd: pwd.value.new
+    })
+    if (res.code === 200) {
+      ElMessage.success('密码修改成功，请重新登录')
+      logout()
+    } else {
+      ElMessage.error(res.msg)
+    }
+  } catch (err) {
+    ElMessage.error('系统异常')
+  }
+}
+
+const logout = () => {
+  localStorage.clear()
+  router.push('/login')
 }
 </script>
 
