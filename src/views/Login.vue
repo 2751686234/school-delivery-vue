@@ -139,29 +139,78 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
+/* 页面背景：更柔和的渐变 */
 .login-page {
   width: 100vw;
   height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #5b86e5 0%, #36d1dc 100%);
+  background-attachment: fixed;
 }
+
+/* 登录卡片：更精致的阴影、圆角、间距 */
 .login-box {
-  background: #fff;
-  padding: 40px 30px;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  background: #ffffff;
+  padding: 48px 36px;
+  border-radius: 20px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
 }
-.login-title { text-align: center; margin-bottom: 30px; }
-.login-btn { width: 100%; border-radius: 8px; }
+.login-box:hover {
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* 标题：优化间距、字体 */
+.login-title {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.login-title h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #2a3340;
+  letter-spacing: 1px;
+}
+
+/* 表单间距优化 */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 登录按钮：圆角、微动效 */
+.login-btn {
+  width: 100%;
+  border-radius: 10px;
+  height: 46px;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.login-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* 注册链接：更美观的文字按钮 */
 .link-button {
   color: #409eff;
   background: transparent;
   border: none;
   padding: 0;
   font-size: 14px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.link-button:hover {
+  color: #2962ff;
+  text-decoration: underline;
 }
 </style>

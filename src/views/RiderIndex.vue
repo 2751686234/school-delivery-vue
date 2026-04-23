@@ -173,5 +173,3 @@ onMounted(() => {
 .card{padding:20px;font-size:16px;}
 .map-box{margin-top:20px;}
 </style>
-
-<!-- 全局引入高德地图JS，放到 public/index.html -->
