@@ -19,11 +19,11 @@ export function getUserOrderList(userId) {
 }
 
 // 商家订单列表
-export function getShopOrderList(shopId) {
+export function getShopOrderList(userId) {
   return request({
     url: '/order/shop/list',
     method: 'get',
-    params: { shopId }
+    params: { userId }  
   })
 }
 

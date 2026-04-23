@@ -134,20 +134,13 @@ const handleDetail = (row) => {
   ]
   showDetail.value = true
 }
-// 页面加载时获取本店订单
+// 获取店铺订单
 const getShopOrders = async () => {
   try {
-    // 从本地获取登录的用户ID（你一定有）
     const user = JSON.parse(localStorage.getItem('user'))
-    const userId = user.id
-
-    // 传入 userId，后端自动获取 shopId
-    const res = await getShopOrderList(userId)
+    const res = await getShopOrderList(user.id) // 👈 传商家 userId
     orderList.value = res.data || []
-  } catch (err) {
-    ElMessage.error('获取订单失败：' + err.message)
-    orderList.value = []
-  }
+  } catch (err) { }
 }
 
 // 接单（调用接口修改状态为2-待取餐）

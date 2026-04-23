@@ -12,7 +12,10 @@
       <h2 class="text-center">商家列表</h2>
       <div class="list">
         <el-card v-for="shop in shopList" :key="shop.id" @click="selectShop(shop)">
-          <img :src="shop.logo" class="shop-img" />
+          <img 
+            :src="shop.logo ? 'http://localhost:8080' + shop.logo : 'https://picsum.photos/300/200'" 
+            class="shop-img" 
+          />
           <div class="text-center shop-name">{{ shop.name }}</div>
         </el-card>
       </div>
@@ -32,7 +35,7 @@
       </div>
     </div>
 
-    <!-- 🔥 购买弹窗（核心） -->
+    <!-- 购买弹窗 -->
     <el-dialog v-model="showBuyDialog" title="选择购买数量" width="400px">
       <div style="text-align:center; padding: 10px 0;">
         <h3>{{ currentGoods.name }}</h3>

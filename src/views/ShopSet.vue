@@ -126,7 +126,7 @@ const pwdForm = ref({ oldPwd: '', newPwd: '', confirmPwd: '' })
 
 // 上传成功
 const handleUploadSuccess = (res) => {
-  shopForm.value.avatar ='http://localhost:8080' + res.data
+  shopForm.value.avatar = res.data
   ElMessage.success('上传成功')
 }
 
@@ -149,11 +149,11 @@ const loadSetting = async () => {
       startPrice: data.startPrice || 0,
       fee: data.fee || 0,
       range: data.range || '',
-      autoAccept: data.autoAccept != null ? String(data.autoAccept) : '0' // ✅ 修复
+      autoAccept: data.autoAccept != null ? String(data.autoAccept) : '0'
     }
 
     if (data.avatar) {
-      avatarList.value = [{ url: data.avatar }]
+      avatarList.value = [{ url: 'http://localhost:8080' + data.avatar }]
     }
   } catch (e) {
     ElMessage.error('获取配置失败')

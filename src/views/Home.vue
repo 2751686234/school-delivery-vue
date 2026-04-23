@@ -34,12 +34,17 @@
       <div class="section">
         <div class="title text-center">精选商家</div>
         <div class="shop-list">
-          <el-card v-for="shop in shopList" :key="shop.id" @click="handleNav('/shop')">
+          <el-card v-for="shop in shopList" :key="shop.id" @click="goShopDetail(shop.id)">
             <div class="shop-item">
-              <img :src="shop.pic" class="shop-pic" />
+              <img 
+                :src="shop.logo 
+                  ? (shop.logo.startsWith('http') ? shop.logo : 'http://localhost:8080' + shop.logo) 
+                  : 'https://picsum.photos/300/200'" 
+                class="shop-pic" 
+              />
               <div class="shop-info">
                 <div class="shop-name">{{ shop.name }}</div>
-                <div class="shop-desc">月售{{ shop.sale }} · 好评{{ shop.star }}%</div>
+                <div class="shop-desc">店铺正常营业</div>
               </div>
             </div>
           </el-card>
@@ -50,20 +55,38 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Location } from '@element-plus/icons-vue'
+import request from '@/utils/request'
 
 const router = useRouter()
 const address = ref('1')
 const keyword = ref('')
-const shopList = [
-  { id:1, name:'校园汉堡店', pic:'https://picsum.photos/seed/shop1/300/200', sale:'328', star:'97' },
-  { id:2, name:'蜜雪冰城', pic:'https://picsum.photos/seed/shop2/300/200', sale:'561', star:'98' },
-]
+const shopList = ref([])
+
+// 页面加载 → 自动读取数据库商家列表
+onMounted(() => {
+  loadShopList()
+})
+
+// 请求后端接口获取真实店铺
+const loadShopList = async () => {
+  try {
+    const res = await request.get('/shop/list')
+    shopList.value = res.data || []
+  } catch (e) {
+    console.error('加载商家失败', e)
+  }
+}
 
 const handleNav = (path) => {
   router.push(path).catch(() => {})
+}
+
+// 点击进入对应店铺详情
+const goShopDetail = (shopId) => {
+  router.push('/shop?shopId=' + shopId)
 }
 </script>
 

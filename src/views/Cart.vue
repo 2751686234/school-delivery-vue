@@ -154,19 +154,34 @@ const toOrder = async () => {
 
   try {
     const user = JSON.parse(localStorage.getItem('user'))
+    if (!user || !user.id) {
+      ElMessage.error("请先登录")
+      return
+    }
+
+    // 1. 从购物车里拿 shopId
+    const shopId = cartList.value[0].shopId
+    if (!shopId) {
+      ElMessage.error("店铺异常，请重新进入店铺下单")
+      return
+    }
+
+    // 2. 地址不能为空！
+    const address = user.address
+
+    // 3. 传参确保 全部不为空、类型正确
     await createOrder({
       userId: user.id,
-      shopId: cartList.value[0].shopId,
-      address: user.address,
+      shopId: Number(shopId),
+      address: address,
       totalPrice: totalPrice.value
     })
 
     cartList.value = []
-    saveCart()
-
-    ElMessage.success({ message: "下单成功", max: 2, duration: 1000 })
+    ElMessage.success("下单成功！")
     router.push('/order')
   } catch (err) {
+    console.error("下单失败", err)
     ElMessage.error("下单失败")
   }
 }
