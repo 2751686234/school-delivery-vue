@@ -105,10 +105,6 @@ onMounted(() => {
     form.value.servicePhone = res.data.service_phone
     form.value.rate = res.data.platform_rate
   })
-  // 加载日志
-  request.get('/admin/log/list').then(res => {
-    logList.value = res.data
-  })
 })
 
 // 上传LOGO
