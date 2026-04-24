@@ -115,7 +115,7 @@ const handleLogin = async () => {
 
     // 5. 保存用户信息
     localStorage.setItem('user', JSON.stringify(payload))
-    // ✅ 关键修改：用完整对象写法，延长显示时间到2秒
+    //用完整对象写法，延长显示时间到2秒
     ElMessage.success({
       message: `欢迎，${payload.name || payload.username}！`,
       duration: 2000, // 延长到2秒，给足够的显示时间
