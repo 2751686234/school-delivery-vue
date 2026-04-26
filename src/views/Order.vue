@@ -12,10 +12,7 @@
       <h2 class="text-center">我的订单</h2>
 
       <div v-if="loading" class="loading">加载中...</div>
-
-      <div v-else-if="orderList.length === 0" class="empty">
-        暂无订单
-      </div>
+      <div v-else-if="orderList.length === 0" class="empty">暂无订单</div>
 
       <div v-else v-for="order in orderList" :key="order.id" class="order-item">
         <el-card>
@@ -25,6 +22,7 @@
           <div>地址：{{ order.address }}</div>
           <div>下单时间：{{ formatTime(order.createTime) }}</div>
 
+          <!-- 配送进度 -->
           <div style="margin-top:10px;">
             <div style="font-weight:bold;margin-bottom:6px;">配送进度</div>
             <el-timeline>
@@ -36,26 +34,38 @@
             </el-timeline>
           </div>
 
+          <!-- 按钮组 -->
           <div style="margin-top:10px;display:flex;gap:8px;">
-            <el-button 
-              v-if="order.status === 1" 
-              type="danger" 
-              size="small" 
-              @click="handleCancelOrder(order.id)"
-            >
-              取消订单
-            </el-button>
-            <el-button 
-              type="info" 
-              size="small" 
-              @click="handleUserDeleteOrder(order.id)"
-            >
-              删除订单记录
-            </el-button>
+            <el-button v-if="order.status === 1" type="danger" size="small" @click="handleCancelOrder(order.id)">取消订单</el-button>
+            <el-button type="info" size="small" @click="handleUserDeleteOrder(order.id)">删除订单记录</el-button>
+            <!-- 新增：查看详情按钮 -->
+            <el-button type="primary" size="small" @click="openDetail(order)">查看详情</el-button>
           </div>
         </el-card>
       </div>
     </div>
+
+    <!-- 订单详情弹窗 -->
+    <el-dialog v-model="showDetail" title="订单详情" width="500px" append-to-body>
+      <div v-if="currentDetail" class="detail-box">
+        <div class="line"><label>订单号：</label>{{ currentDetail.orderNo }}</div>
+        <div class="line"><label>商家名称：</label>{{ currentDetail.shopName }}</div>
+        <div class="line"><label>商家电话：</label>{{ currentDetail.shopPhone || '未获取' }}</div>
+        <div class="line"><label>骑手姓名：</label>{{ currentDetail.riderName || '未接单' }}</div>
+        <div class="line"><label>骑手电话：</label>{{ currentDetail.riderPhone || '未接单' }}</div>
+        <div class="line"><label>收货地址：</label>{{ currentDetail.address }}</div>
+        <div class="line"><label>总金额：</label>¥{{ currentDetail.totalPrice }}</div>
+
+        <div class="goods-section">
+          <div class="title">商品清单</div>
+          <div class="goods-item" v-for="(g, i) in goodsList" :key="i">
+            <span>• {{ g.goodsName }}</span>
+            <span>x{{ g.num }}</span>
+            <span>¥{{ g.price }}</span>
+          </div>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -68,26 +78,57 @@ import request from '@/utils/request'
 const orderList = ref([])
 const loading = ref(true)
 
-const handleCancelOrder = async (orderId) => {
+// 详情弹窗
+const showDetail = ref(false)
+const currentDetail = ref(null)
+const goodsList = ref([])
+
+// 打开订单详情
+const openDetail = async (order) => {
   try {
-    await cancelOrder(orderId)
-    ElMessage.success('订单取消成功')
-    getOrderList()
-  } catch (err) {
-    ElMessage.error('取消订单失败')
+    currentDetail.value = order
+
+    // 查询商品
+    const res = await request.get('/order/goods/detail', {
+      params: { orderId: order.id }
+    })
+    goodsList.value = res.data || []
+
+    // 查询商家、骑手信息
+    const info = await request.get('/order/extra/info', {
+      params: { orderId: order.id }
+    })
+    currentDetail.value = { ...order, ...info.data }
+
+    showDetail.value = true
+  } catch (e) {
+    ElMessage.error('加载详情失败')
   }
 }
 
+// 取消订单
+const handleCancelOrder = async (orderId) => {
+  try {
+    await cancelOrder(orderId)
+    ElMessage.success('取消成功')
+    getOrderList()
+  } catch (err) {
+    ElMessage.error('取消失败')
+  }
+}
+
+// 删除订单
 const handleUserDeleteOrder = async (orderId) => {
   try {
     await request.post('/order/user/delete', { orderId })
-    ElMessage.success('订单记录已删除')
+    ElMessage.success('删除成功')
     getOrderList()
   } catch (err) {
     ElMessage.error('删除失败')
   }
 }
 
+// 获取订单列表
 const getOrderList = async () => {
   try {
     loading.value = true
@@ -101,7 +142,7 @@ const getOrderList = async () => {
   }
 }
 
-// 格式化时间
+// 时间格式化
 const formatTime = (time) => {
   if (!time) return ''
   return new Date(time).toLocaleString()
@@ -120,4 +161,16 @@ onMounted(() => {
 .order-item { margin-bottom:16px; }
 .loading { text-align:center; padding:20px; }
 .empty { text-align:center; padding:40px; color:#999; }
+
+.detail-box { padding: 10px 0; }
+.line { margin: 8px 0; font-size: 14px; }
+label { font-weight: bold; color: #333; }
+.goods-section { margin-top: 16px; }
+.goods-section .title { font-weight: bold; margin-bottom: 8px; }
+.goods-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px dashed #eee;
+}
 </style>
