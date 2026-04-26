@@ -78,6 +78,28 @@
           </el-table-column>
         </el-table>
       </el-card>
+
+      <!-- 账单详情弹窗 -->
+      <el-dialog v-model="showDetail" title="账单详情" width="500px">
+        <el-descriptions :column="1" border size="medium" align="center">
+          <el-descriptions-item label="订单号">{{ currentOrder.orderNo }}</el-descriptions-item>
+          <el-descriptions-item label="客户姓名">{{ currentOrder.name || '未知客户' }}</el-descriptions-item>
+          <el-descriptions-item label="联系电话">{{ currentOrder.phone || '无' }}</el-descriptions-item>
+          <el-descriptions-item label="订单金额">
+            <span style="color:red;font-weight:bold">¥{{ currentOrder.totalPrice }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="订单状态">
+            <el-tag :type="getStatusTagType(currentOrder.status)">
+              {{ getStatusText(currentOrder.status) }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="下单时间">{{ currentOrder.createTime }}</el-descriptions-item>
+        </el-descriptions>
+
+        <template #footer>
+          <el-button @click="showDetail = false">关闭</el-button>
+        </template>
+      </el-dialog>
     </div>
   </div>
 </template>
@@ -99,6 +121,10 @@ const monthOrder = ref(0)
 // 列表与筛选
 const financeList = ref([])
 const dateRange = ref([])
+
+// 详情弹窗
+const showDetail = ref(false)
+const currentOrder = ref({})
 
 // 获取商家ID
 const user = JSON.parse(localStorage.getItem('user'))
@@ -156,24 +182,42 @@ const searchFinance = () => {
   ElMessage.success('查询成功')
 }
 
-// 导出报表
-const exportExcel = () => {
-  ElMessage.success('报表导出成功，已下载到本地')
+// 导出报表（真实实现）
+const exportExcel = async () => {
+  try {
+    // 支持按筛选条件导出
+    const params = { userId }
+    if (dateRange.value && dateRange.value.length === 2) {
+      params.startDate = dateRange.value[0]
+      params.endDate = dateRange.value[1]
+    }
+
+    const res = await request({
+      url: '/shop/finance/export',
+      method: 'get',
+      params,
+      responseType: 'blob'
+    })
+
+    // 下载文件
+    const blob = new Blob([res], { type: 'application/vnd.ms-excel' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `商家财务报表_${new Date().getTime()}.xlsx`
+    a.click()
+    URL.revokeObjectURL(url)
+
+    ElMessage.success('报表导出成功！')
+  } catch (e) {
+    ElMessage.error('导出失败')
+  }
 }
 
-// 查看订单详情
+// 查看订单详情 → 弹窗
 const handleDetail = (row) => {
-  ElMessage.info({
-    message: `
-      订单号：${row.orderNo}
-      客户：${row.name || '未知'}
-      电话：${row.phone || '无'}
-      金额：¥${row.totalPrice}
-      状态：${getStatusText(row.status)}
-      下单时间：${row.createTime}
-    `,
-    duration: 3000
-  })
+  currentOrder.value = row
+  showDetail.value = true
 }
 
 // 状态文本
