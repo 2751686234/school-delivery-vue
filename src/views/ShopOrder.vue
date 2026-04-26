@@ -23,8 +23,15 @@
             <el-option label="已完成" value="4"></el-option>
             <el-option label="已取消" value="5"></el-option>
           </el-select>
+
+          <!-- 订单号搜索 -->
           <el-input v-model="searchNo" placeholder="搜索订单号" style="width: 200px; margin-right: 10px;" />
+          <!-- 客户姓名搜索 -->
+          <el-input v-model="searchName" placeholder="搜索客户姓名" style="width: 200px; margin-right: 10px;" />
+
           <el-button type="primary" @click="searchOrder">搜索</el-button>
+
+          <el-button style="margin-left:10px" @click="resetSearch">重置</el-button>
         </div>
 
         <el-table :data="orderList" border style="width: 100%; margin-top: 20px;" align="center">
@@ -89,9 +96,14 @@ const router = useRouter()
 const orderList = ref([])
 const status = ref('')
 const searchNo = ref('')
+const searchName = ref('')
+
 const showDetail = ref(false)
 const orderDetail = ref([])
 const currentOrder = ref({})
+
+// 原始订单列表
+const originOrderList = ref([])
 
 const logout = () => {
   localStorage.clear()
@@ -134,6 +146,7 @@ const getShopOrders = async () => {
     const user = JSON.parse(localStorage.getItem('user'))
     const res = await getShopOrderList(user.id)
     orderList.value = res.data || []
+    originOrderList.value = res.data || []
   } catch (err) {}
 }
 
@@ -157,15 +170,37 @@ const handleCancel = async (row) => {
   }
 }
 
+// 搜索：状态 + 订单号 + 客户姓名
 const searchOrder = () => {
-  let filterList = [...orderList.value]
+  let filterList = [...originOrderList.value]
+
+  // 按状态筛选
   if (status.value) {
     filterList = filterList.filter(item => item.status === Number(status.value))
   }
+  // 按订单号筛选
   if (searchNo.value) {
     filterList = filterList.filter(item => item.orderNo.includes(searchNo.value))
   }
+  // 按客户姓名筛选
+  if (searchName.value) {
+    filterList = filterList.filter(item => item.name && item.name.includes(searchName.value))
+  }
+
   orderList.value = filterList
+
+  if (filterList.length === 0) {
+    ElMessage.info('未找到符合条件的订单')
+  }
+}
+
+// 重置搜索
+const resetSearch = () => {
+  status.value = ''
+  searchNo.value = ''
+  searchName.value = ''
+  orderList.value = [...originOrderList.value]
+  ElMessage.success('已重置搜索条件')
 }
 
 const formatTime = (time) => {
@@ -191,8 +226,7 @@ onMounted(() => {
   text-align: center !important;
 }
 .page-container {
-  width: 90%;
-  max-width: 1200px;
+  width: 90%; max-width: 1200px;
   margin: 0 auto;
   padding: 30px 0;
   text-align: center;

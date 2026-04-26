@@ -63,7 +63,7 @@
         <el-dialog v-model="showMsg" title="发送通知" width="400px">
           <el-form :model="msgForm" label-width="80px">
             <el-form-item label="通知内容">
-              <el-input v-model="msgForm.content" type="textarea" rows="4" placeholder="请输入通知内容" />
+              <el-input v-model="msgForm.content" type="textarea" :rows="4" placeholder="请输入通知内容" />
             </el-form-item>
           </el-form>
           <template #footer>
@@ -97,7 +97,7 @@ const getUserList = async () => {
     const res = await request.get('/shop/user/list', {
       params: { 
         userId: user.id,
-        keyword: searchKey.value  // 🔥 搜索关键词传给后端
+        keyword: searchKey.value
       }
     })
     userList.value = res.data || []
