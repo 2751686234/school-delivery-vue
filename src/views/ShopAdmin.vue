@@ -15,13 +15,29 @@
       <h2 class="page-title">商品管理</h2>
       <el-card class="card-container">
         <div class="search-add">
-          <el-input v-model="searchKey" placeholder="搜索商品名称" style="width: 300px; margin-right: 10px;" />
-          <el-button type="primary" @click="showAddDialog = true">新增商品</el-button>
+
+          <el-input
+            v-model="searchKey"
+            placeholder="搜索商品名称"
+            style="width: 300px; margin-right: 10px;"
+            @keyup.enter="getGoodsList"/>
+
+          <el-button type="primary" @click="getGoodsList">搜索</el-button>
+          <el-button style="margin-left:10px" @click="resetSearch">重置</el-button>
+
+          <el-button type="primary" style="margin-left:10px" @click="showAddDialog = true">新增商品</el-button>
         </div>
 
-        <el-table :data="goodsList" border style="width: 100%; margin-top: 20px;" align="center">
-          <el-table-column prop="id" label="商品ID" align="center" />
-          <el-table-column prop="name" label="商品名称" align="center" />
+        <el-table 
+          :data="goodsList" 
+          border 
+          style="width: 100%; margin-top: 20px;" 
+          align="center"
+          @sort-change="handleSortChange"
+        >
+         
+          <el-table-column prop="id" label="商品ID" align="center" sortable="custom" />
+          <el-table-column prop="name" label="商品名称" align="center" sortable="custom" />
 
           <el-table-column label="商品图片" align="center">
             <template #default="scope">
@@ -33,9 +49,9 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="price" label="商品价格" align="center" />
+          <el-table-column prop="price" label="商品价格" align="center" sortable="custom" />
           
-          <el-table-column prop="status" label="状态" align="center">
+          <el-table-column prop="status" label="状态" align="center" sortable="custom">
             <template #default="scope">
               <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'">
                 {{ scope.row.status === 1 ? '上架' : '下架' }}
@@ -107,6 +123,12 @@ const router = useRouter()
 const goodsList = ref([])
 const searchKey = ref('')
 
+// 排序字段
+const sort = ref({
+  prop: '',
+  order: ''
+})
+
 const showAddDialog = ref(false)
 const isEdit = ref(false)
 const form = ref({ name: '', price: '', status: 1, img: '' })
@@ -119,14 +141,41 @@ const previewImg = (url) => {
   showPreview.value = true
 }
 
+// 排序变化触发
+const handleSortChange = ({ prop, order }) => {
+  sort.value.prop = prop
+  sort.value.order = order
+  getGoodsList()
+}
+
 const user = JSON.parse(localStorage.getItem('user'))
 const userId = user?.id
 
+// 带搜索 + 排序的查询
 const getGoodsList = () => {
-  request.get('/goods/list', { params: { userId } }).then(res => {
+  request.get('/goods/list', {
+    params: {
+      userId,
+      name: searchKey.value,
+      sortProp: sort.value.prop,
+      sortOrder: sort.value.order
+    }
+  }).then(res => {
     goodsList.value = res.data
+    if (res.data.length === 0 && searchKey.value) {
+      ElMessage.info('未找到相关商品')
+    }
   })
 }
+
+const resetSearch = () => {
+  searchKey.value = ''
+  sort.value.prop = ''
+  sort.value.order = ''
+  getGoodsList()
+  ElMessage.success('已重置搜索')
+}
+
 onMounted(() => getGoodsList())
 
 const handleManualUpload = async (uploadFile) => {
