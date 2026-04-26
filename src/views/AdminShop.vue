@@ -82,9 +82,19 @@
           <el-input v-model.number="form.userId" placeholder="请输入用户表中的商家ID" />
         </el-form-item>
 
+        <!-- Logo 上传组件 -->
         <el-form-item label="Logo">
-          <el-input v-model="form.logo" placeholder="输入图片路径" />
+          <el-upload
+            action="http://localhost:8080/file/upload"
+            list-type="picture-card"
+            :on-success="handleUploadSuccess"
+            :limit="1"
+          >
+            <el-icon><Plus /></el-icon>
+          </el-upload>
+          <el-input v-model="form.logo" placeholder="图片路径（自动生成，无需手动输入）" style="margin-top:8px" readonly />
         </el-form-item>
+
         <el-form-item label="经度">
           <el-input v-model="form.lng" />
         </el-form-item>
@@ -104,6 +114,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 import request from '@/utils/request'
 
 const router = useRouter()
@@ -122,6 +133,19 @@ const form = ref({
   lat: '', 
   status: 1 
 })
+
+// 上传成功回调
+const handleUploadSuccess = (res) => {
+  if (res.code === 200) {
+    // 存相对路径，和你后端逻辑保持一致
+    form.value.logo = res.data.startsWith('http://localhost:8080') 
+      ? res.data.replace('http://localhost:8080', '') 
+      : res.data
+    ElMessage.success('Logo上传成功')
+  } else {
+    ElMessage.error(res.msg || '上传失败')
+  }
+}
 
 // 加载列表
 const loadList = async () => {

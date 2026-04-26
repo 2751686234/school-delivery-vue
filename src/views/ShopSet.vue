@@ -71,10 +71,10 @@
           <el-tab-pane label="配送设置">
             <el-form :model="deliveryForm" label-width="120px" style="max-width:600px; margin:20px auto;">
               <el-form-item label="起送价">
-                <el-input v-model="deliveryForm.startPrice" type="number" />
+                <el-input v-model.number="deliveryForm.startPrice" type="number" placeholder="请输入起送价" />
               </el-form-item>
               <el-form-item label="配送费">
-                <el-input v-model="deliveryForm.fee" type="number" />
+                <el-input v-model.number="deliveryForm.fee" type="number" placeholder="请输入配送费" />
               </el-form-item>
               <el-form-item label="配送范围">
                 <el-input v-model="deliveryForm.range" placeholder="单位：米" />
@@ -220,7 +220,6 @@ const updatePwd = async () => {
       ElMessage.success('密码修改成功，请重新登录')
       logout()
     } else {
-
       ElMessage.error(res.msg)
     }
 
