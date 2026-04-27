@@ -166,10 +166,149 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.wrap{width:100%;min-height:100vh;background:#f5f7fa;}
-.nav{display:flex;justify-content:center;}
-.container{width:90%;max-width:1200px;margin:0 auto;padding:30px 0;text-align:center;}
-.title{font-size:24px;margin-bottom:20px;}
-.card{padding:20px;font-size:16px;}
-.map-box{margin-top:20px;}
+.wrap {
+  width: 100%;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+/* 导航栏：活力青柠渐变 */
+.nav {
+  display: flex;
+  justify-content: center;
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  border: none;
+  box-shadow: 0 4px 16px rgba(17, 153, 142, 0.25);
+}
+.nav :deep(.el-menu-item) {
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+.nav :deep(.el-menu-item:hover),
+.nav :deep(.el-menu-item.is-active) {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 0;
+  text-align: center;
+}
+.title {
+  font-size: 28px;
+  margin-bottom: 28px;
+  font-weight: 800;
+  color: #11998e;
+  letter-spacing: 1px;
+}
+
+/* 数据卡片：多彩渐变 */
+.card {
+  padding: 28px 20px;
+  font-size: 16px;
+  border-radius: 20px;
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+.card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+}
+.card b {
+  font-size: 32px;
+  display: block;
+  margin-top: 8px;
+  font-weight: 800;
+}
+.el-col:nth-child(1) .card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.el-col:nth-child(2) .card {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+.el-col:nth-child(3) .card {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+.el-col:nth-child(4) .card {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+/* 地图区域 */
+.map-box {
+  margin-top: 32px;
+  padding: 24px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+}
+.map-box h3 {
+  text-align: center;
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #11998e;
+}
+#container {
+  width: 100%;
+  height: 380px;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+}
+
+/* 可接单列表 */
+.container > div:last-child {
+  margin-top: 36px;
+  padding: 24px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+}
+.container > div:last-child h3 {
+  text-align: center;
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #11998e;
+}
+
+/* 表格美化 */
+.wrap :deep(.el-table) {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  border: none;
+}
+.wrap :deep(.el-table th) {
+  background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+  color: #11998e;
+  font-weight: 800;
+  font-size: 15px;
+}
+.wrap :deep(.el-table--border::after),
+.wrap :deep(.el-table--group::after) {
+  background-color: transparent;
+}
+.wrap .el-button--success {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  padding: 0 20px;
+  box-shadow: 0 4px 14px rgba(17, 153, 142, 0.35);
+  transition: all 0.3s;
+}
+.wrap .el-button--success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(17, 153, 142, 0.45);
+}
 </style>

@@ -115,8 +115,128 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.wrap{width:100%;min-height:100vh;background:#f5f7fa;}
-.nav{display:flex;justify-content:center;}
-.container{width:90%;max-width:1200px;margin:0 auto;padding:30px 0;text-align:center;}
-.title{font-size:24px;margin-bottom:20px;}
+.wrap {
+  width: 100%;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+/* 导航栏：与工作台统一 */
+.nav {
+  display: flex;
+  justify-content: center;
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  border: none;
+  box-shadow: 0 4px 16px rgba(17, 153, 142, 0.25);
+}
+.nav :deep(.el-menu-item) {
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+.nav :deep(.el-menu-item:hover),
+.nav :deep(.el-menu-item.is-active) {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 0;
+  text-align: center;
+}
+.title {
+  font-size: 28px;
+  margin-bottom: 28px;
+  font-weight: 800;
+  color: #11998e;
+  letter-spacing: 1px;
+}
+
+/* 表格容器美化 */
+.container {
+  padding: 32px 0;
+}
+.container > .el-table {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+/* 表格美化（复用工作台样式） */
+.wrap :deep(.el-table) {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  border: none;
+}
+.wrap :deep(.el-table th) {
+  background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+  color: #11998e;
+  font-weight: 800;
+  font-size: 15px;
+}
+.wrap :deep(.el-table--border::after),
+.wrap :deep(.el-table--group::after) {
+  background-color: transparent;
+}
+
+/* 状态标签颜色强化 */
+.wrap :deep(.el-tag--warning) {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  padding: 0 14px;
+  border-radius: 10px;
+}
+.wrap :deep(.el-tag--primary) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  padding: 0 14px;
+  border-radius: 10px;
+}
+.wrap :deep(.el-tag--success) {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  padding: 0 14px;
+  border-radius: 10px;
+}
+.wrap :deep(.el-tag--info) {
+  background: linear-gradient(135deg, #a8a8a8 0%, #c9c9c9 100%);
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  padding: 0 14px;
+  border-radius: 10px;
+}
+
+/* 操作按钮 */
+.wrap .el-button--primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  padding: 0 20px;
+  box-shadow: 0 4px 14px rgba(102, 126, 234, 0.35);
+  transition: all 0.3s;
+}
+.wrap .el-button--primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.45);
+}
+.wrap .el-button--primary:disabled {
+  background: #d1d5db;
+  box-shadow: none;
+}
 </style>
