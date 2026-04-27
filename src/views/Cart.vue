@@ -191,43 +191,116 @@ const toOrder = async () => {
 .cart-page {
   width: 100%;
   min-height: 100vh;
-  background: #f7f8fa;
+  background: #f8f9fa;
 }
+
+/* 导航栏：与首页统一 */
 .nav {
   width: 100%;
+  background: linear-gradient(135deg, #ff7e5f 0%, #ff6b35 100%);
+  border: none;
+  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.25);
 }
+.nav :deep(.el-menu-item) {
+  color: #fff;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+.nav :deep(.el-menu-item:hover),
+.nav :deep(.el-menu-item.is-active) {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
 .container {
   width: 95%;
   max-width: 1000px;
   margin: 0 auto;
-  padding: 20px 0;
+  padding: 28px 0;
 }
+
 .text-center {
   text-align: center;
 }
-.empty-cart {
-  padding: 60px 0;
-  color: #999;
-  font-size: 16px;
+
+.container h2 {
+  font-size: 26px;
+  font-weight: 800;
+  color: #ff6b35;
+  margin-bottom: 28px;
+  letter-spacing: 1px;
 }
+
+.empty-cart {
+  padding: 80px 0;
+  color: #909399;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* 表格美化 */
+.cart-page :deep(.el-table) {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  border: none;
+}
+.cart-page :deep(.el-table th) {
+  background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
+  color: #ff6b35;
+  font-weight: 700;
+}
+.cart-page :deep(.el-table--border::after),
+.cart-page :deep(.el-table--group::after) {
+  background-color: transparent;
+}
+
 .num-box {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
+}
+.num-box .el-button {
+  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-weight: 700;
 }
 .num {
-  width: 20px;
+  width: 24px;
+  font-weight: 600;
+  font-size: 16px;
 }
+
 .total-price {
   text-align: right;
-  margin-top: 15px;
-  font-size: 16px;
-  font-weight: bold;
-  color: #ff4d4f;
+  margin-top: 24px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #ff6b35;
 }
+.total-price span {
+  font-size: 28px;
+}
+
 .order-btn {
   max-width: 500px;
-  margin: 20px auto 0;
+  margin: 32px auto 0;
+  height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ff7e5f 0%, #ff6b35 100%);
+  border: none;
+  font-size: 18px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+  transition: all 0.3s;
+}
+.order-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(255, 107, 53, 0.55);
 }
 </style>

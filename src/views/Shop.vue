@@ -126,15 +126,153 @@ onMounted(() => getShopList())
 </script>
 
 <style scoped>
-.shop-page { width:100%; min-height:100vh; background:#f7f8fa; }
-.nav { width:100%; }
-.container { width:95%; max-width:1200px; margin:0 auto; padding:20px 0; }
-.text-center { text-align:center; }
-.list { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
-.shop-img { width:100%; height:110px; border-radius:8px; object-fit:cover; }
-.shop-name { margin-top:8px; font-weight:bold; }
-.food-section { margin-top:20px; }
-.food-list { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
-.food-img { width:100%; height:100px; border-radius:8px; object-fit:cover; }
-.food-price { color:#ff4d4f; font-weight:bold; margin:4px 0; }
+.shop-page { 
+  width: 100%; 
+  min-height: 100vh; 
+  background: #f8f9fa; 
+}
+
+/* 导航栏：统一风格 */
+.nav { 
+  width: 100%; 
+  background: linear-gradient(135deg, #ff7e5f 0%, #ff6b35 100%);
+  border: none;
+  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.25);
+}
+.nav :deep(.el-menu-item) {
+  color: #fff;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+.nav :deep(.el-menu-item:hover),
+.nav :deep(.el-menu-item.is-active) {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+.container { 
+  width: 95%; 
+  max-width: 1200px; 
+  margin: 0 auto; 
+  padding: 28px 0; 
+}
+
+.text-center { 
+  text-align: center; 
+}
+
+.container h2 {
+  font-size: 26px;
+  font-weight: 800;
+  color: #ff6b35;
+  margin-bottom: 24px;
+  letter-spacing: 1px;
+}
+
+/* 商家列表 */
+.list { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
+  gap: 18px; 
+}
+.list :deep(.el-card) {
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+  overflow: hidden;
+}
+.list :deep(.el-card:hover) {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 14px 32px rgba(0,0,0,0.14);
+}
+.shop-img { 
+  width: 100%; 
+  height: 140px; 
+  border-radius: 12px 12px 0 0; 
+  object-fit: cover; 
+  margin: -16px -16px 12px -16px;
+}
+.shop-name { 
+  margin-top: 8px; 
+  font-weight: 700; 
+  font-size: 16px;
+  color: #2a3340;
+}
+
+.food-section { 
+  margin-top: 32px; 
+}
+.sub-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ff6b35;
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+}
+.food-list { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+  gap: 18px; 
+}
+.food-list :deep(.el-card) {
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  transition: all 0.3s;
+  overflow: hidden;
+}
+.food-list :deep(.el-card:hover) {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+}
+.food-img { 
+  width: 100%; 
+  height: 130px; 
+  border-radius: 12px; 
+  object-fit: cover; 
+  margin-bottom: 10px;
+}
+.food-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: #2a3340;
+  margin-bottom: 6px;
+}
+.food-price { 
+  color: #ff6b35; 
+  font-weight: 800; 
+  font-size: 18px;
+  margin: 6px 0 12px 0; 
+}
+.food-list .el-button {
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff7e5f 0%, #ff6b35 100%);
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(255, 107, 53, 0.35);
+  transition: all 0.3s;
+}
+.food-list .el-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.45);
+}
+
+/* 弹窗美化 */
+.shop-page :deep(.el-dialog) {
+  border-radius: 20px;
+  overflow: hidden;
+}
+.shop-page :deep(.el-dialog__header) {
+  background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
+  margin: 0;
+  padding: 20px;
+}
+.shop-page :deep(.el-dialog__title) {
+  color: #ff6b35;
+  font-weight: 700;
+}
 </style>

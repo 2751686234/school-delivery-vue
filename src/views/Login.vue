@@ -139,78 +139,158 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-/* 页面背景：更柔和的渐变 */
+/* 页面背景：活力暖橙渐变，贴合外卖行业属性 */
 .login-page {
   width: 100vw;
   height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #5b86e5 0%, #36d1dc 100%);
+  background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 50%, #ff9a56 100%);
   background-attachment: fixed;
+  position: relative;
+  overflow: hidden;
 }
 
-/* 登录卡片：更精致的阴影、圆角、间距 */
+/* 增加 subtle 网格纹理，提升质感 */
+.login-page::before {
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: bgFloat 25s linear infinite;
+  z-index: 0;
+}
+
+@keyframes bgFloat {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(40px, 40px); }
+}
+
+/* 登录卡片：纯白圆角卡片，柔和阴影 */
 .login-box {
   background: #ffffff;
-  padding: 48px 36px;
-  border-radius: 20px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+  padding: 52px 40px;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
   width: 100%;
-  max-width: 440px;
+  max-width: 450px;
   box-sizing: border-box;
-  transition: all 0.3s ease;
-}
-.login-box:hover {
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  z-index: 1;
+  animation: cardSlideUp 0.6s ease-out;
 }
 
-/* 标题：优化间距、字体 */
+@keyframes cardSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-box:hover {
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.22);
+  transform: translateY(-6px);
+}
+
+/* 标题：加粗加大，温暖色调 */
 .login-title {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 44px;
 }
 .login-title h2 {
   margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: #2a3340;
-  letter-spacing: 1px;
+  font-size: 28px;
+  font-weight: 800;
+  color: #ff6b35;
+  letter-spacing: 2px;
+  text-shadow: 2px 2px 0px rgba(255, 107, 53, 0.1);
 }
 
-/* 表单间距优化 */
+/* 表单间距 */
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
-/* 登录按钮：圆角、微动效 */
+/* 输入框美化：加深边框，聚焦高亮 */
+.login-form :deep(.el-input__wrapper) {
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  padding: 8px 16px;
+  border: 2px solid #f0f0f0;
+}
+.login-form :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.18);
+  border-color: #ff7e5f;
+}
+
+/* Select 选择器特殊美化 */
+.login-form :deep(.el-select .el-input__wrapper) {
+  cursor: pointer;
+}
+
+/* 登录按钮：暖橙渐变，强点击感 */
 .login-btn {
   width: 100%;
-  border-radius: 10px;
-  height: 46px;
-  font-size: 16px;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  border-radius: 14px;
+  height: 50px;
+  font-size: 17px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ff7e5f 0%, #ff6b35 100%);
+  border: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+  letter-spacing: 1px;
 }
 .login-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(255, 107, 53, 0.55);
+}
+.login-btn:active {
   transform: translateY(-1px);
 }
 
-/* 注册链接：更美观的文字按钮 */
+/* 注册链接：橙色系，保持风格统一 */
 .link-button {
-  color: #409eff;
+  color: #ff6b35;
   background: transparent;
   border: none;
   padding: 0;
   font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: color 0.2s;
+  transition: all 0.2s;
 }
 .link-button:hover {
-  color: #2962ff;
+  color: #e85a24;
   text-decoration: underline;
+  letter-spacing: 0.5px;
+}
+
+/* 响应式微调 */
+@media (max-width: 576px) {
+  .login-box {
+    padding: 40px 28px;
+    margin: 0 20px;
+    border-radius: 20px;
+  }
+  .login-title h2 {
+    font-size: 24px;
+  }
+  .login-btn {
+    height: 48px;
+  }
 }
 </style>

@@ -169,50 +169,196 @@ const handleLogout = () => {
 .user-page {
   width: 100%;
   min-height: 100vh;
-  background: #f7f8fa;
+  background: #f8f9fa;
 }
+
+/* 导航栏：与全端统一的暖橙渐变 */
 .nav {
   width: 100%;
+  background: linear-gradient(135deg, #ff7e5f 0%, #ff6b35 100%);
+  border: none;
+  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.25);
 }
+.nav :deep(.el-menu-item) {
+  color: #fff;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+.nav :deep(.el-menu-item:hover),
+.nav :deep(.el-menu-item.is-active) {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
 .container {
   width: 95%;
   max-width: 600px;
   margin: 0 auto;
-  padding: 20px 0;
+  padding: 28px 0;
 }
+
 .text-center {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+  font-size: 26px;
+  font-weight: 800;
+  color: #ff6b35;
+  letter-spacing: 1px;
 }
+
+/* 信息卡片：精致化 */
 .info-card {
-  border-radius: 12px;
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  padding: 12px 20px;
+  transition: all 0.3s;
 }
+.info-card:hover {
+  box-shadow: 0 16px 40px rgba(0,0,0,0.14);
+  transform: translateY(-4px);
+}
+
 .info-row {
   display: flex;
-  padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 0;
+  border-bottom: 1px solid #f5f5f5;
+  align-items: center;
 }
-.info-row:last-child {
+.info-row:last-of-type {
   border-bottom: none;
 }
 .label {
-  width: 80px;
-  color: #666;
-  font-weight: 500;
+  width: 90px;
+  color: #909399;
+  font-weight: 700;
+  font-size: 15px;
 }
 .value {
   flex: 1;
-  color: #333;
+  color: #2a3340;
+  font-size: 16px;
+  font-weight: 500;
 }
+
 .button-group {
   display: flex;
   justify-content: center;
-  gap: 12px;
-  margin-top: 24px;
+  gap: 16px;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 2px dashed #f0f0f0;
+}
+.button-group .el-button {
+  border-radius: 14px;
+  height: 44px;
+  padding: 0 28px;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  transition: all 0.3s;
+}
+.button-group .el-button--primary {
+  background: linear-gradient(135deg, #ff7e5f 0%, #ff6b35 100%);
+  box-shadow: 0 6px 18px rgba(255, 107, 53, 0.35);
+}
+.button-group .el-button--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(255, 107, 53, 0.45);
+}
+.button-group .el-button--danger {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+  box-shadow: 0 6px 18px rgba(238, 90, 90, 0.35);
+}
+.button-group .el-button--danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(238, 90, 90, 0.45);
+}
+
+/* 弹窗美化 */
+.user-page :deep(.el-dialog) {
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.user-page :deep(.el-dialog__header) {
+  background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
+  margin: 0;
+  padding: 22px 24px;
+}
+.user-page :deep(.el-dialog__title) {
+  color: #ff6b35;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+.user-page :deep(.el-dialog__body) {
+  padding: 28px 24px 20px;
+}
+.user-page :deep(.el-input__wrapper) {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  border: 2px solid #f0f0f0;
+  padding: 8px 16px;
+  transition: all 0.3s;
+}
+.user-page :deep(.el-input__wrapper.is-focus) {
+  border-color: #ff7e5f;
+  box-shadow: 0 6px 18px rgba(255, 126, 95, 0.18);
 }
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 12px;
+  padding-top: 8px;
+}
+.dialog-footer .el-button {
+  border-radius: 12px;
+  height: 40px;
+  padding: 0 24px;
+  font-weight: 600;
+}
+.dialog-footer .el-button--primary {
+  background: linear-gradient(135deg, #ff7e5f 0%, #ff6b35 100%);
+  border: none;
+  box-shadow: 0 4px 14px rgba(255, 107, 53, 0.35);
+}
+.dialog-footer .el-button--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.45);
+}
+
+/* 响应式适配 */
+@media (max-width: 576px) {
+  .container {
+    padding: 20px 0;
+  }
+  .info-card {
+    padding: 8px 16px;
+    border-radius: 16px;
+  }
+  .text-center {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+  .info-row {
+    padding: 14px 0;
+  }
+  .label {
+    width: 80px;
+    font-size: 14px;
+  }
+  .value {
+    font-size: 15px;
+  }
+  .button-group {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .button-group .el-button {
+    width: 100%;
+  }
 }
 </style>
