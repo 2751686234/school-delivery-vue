@@ -244,11 +244,29 @@ const logout = () => {
   min-height: 100vh;
   background: #f5f7fa;
 }
+
+/* 导航栏：专业深蓝渐变 */
 .nav-bar {
   width: 100%;
   display: flex !important;
   justify-content: center !important;
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  border: none;
+  box-shadow: 0 4px 16px rgba(44, 62, 80, 0.25);
 }
+.nav-bar :deep(.el-menu-item) {
+  color: #ecf0f1;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+.nav-bar :deep(.el-menu-item:hover),
+.nav-bar :deep(.el-menu-item.is-active) {
+  background: rgba(255,255,255,0.1);
+  color: #3498db;
+  border-bottom-color: #3498db;
+}
+
 .page-container {
   width: 90%;
   max-width: 1200px;
@@ -257,22 +275,105 @@ const logout = () => {
   text-align: center;
 }
 .page-title {
-  font-size: 22px;
-  margin-bottom: 20px;
+  font-size: 24px;
+  margin-bottom: 24px;
+  font-weight: 800;
+  color: #2c3e50;
+  letter-spacing: 1px;
 }
 .card-container {
-  padding: 20px;
+  padding: 28px;
   text-align: left;
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
 }
 .search-add {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.search-add :deep(.el-input__wrapper) {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  border: 2px solid #ecf0f1;
+  padding: 8px 16px;
+  transition: all 0.3s;
+}
+.search-add :deep(.el-input__wrapper.is-focus) {
+  border-color: #3498db;
+  box-shadow: 0 6px 18px rgba(52, 152, 219, 0.18);
+}
+.search-add .el-button {
+  border-radius: 12px;
+  height: 40px;
+  padding: 0 20px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+.search-add .el-button--primary {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  border: none;
+  box-shadow: 0 4px 14px rgba(52, 152, 219, 0.35);
+}
+.search-add .el-button--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(52, 152, 219, 0.45);
+}
+
+/* 表格美化 */
+.page-wrapper :deep(.el-table) {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  border: none;
+}
+.page-wrapper :deep(.el-table th) {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ecf0f1 100%);
+  color: #2c3e50;
+  font-weight: 700;
 }
 .goods-img {
-  width: 50px;
-  height: 50px;
+  width: 56px;
+  height: 56px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 10px;
   cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: all 0.3s;
+}
+.goods-img:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+/* 弹窗美化 */
+.page-wrapper :deep(.el-dialog) {
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.page-wrapper :deep(.el-dialog__header) {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ecf0f1 100%);
+  margin: 0;
+  padding: 22px 24px;
+}
+.page-wrapper :deep(.el-dialog__title) {
+  color: #2c3e50;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+.page-wrapper :deep(.el-input__wrapper) {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  border: 2px solid #ecf0f1;
+  padding: 8px 16px;
+  transition: all 0.3s;
+}
+.page-wrapper :deep(.el-input__wrapper.is-focus) {
+  border-color: #3498db;
+  box-shadow: 0 6px 18px rgba(52, 152, 219, 0.18);
 }
 </style>

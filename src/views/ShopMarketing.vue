@@ -257,12 +257,30 @@ const logout = () => {
   min-height: 100vh;
   background: #f5f7fa;
 }
+
+/* 导航栏统一 */
 .nav-bar {
   width: 100%;
   display: flex !important;
   justify-content: center !important;
   text-align: center !important;
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  border: none;
+  box-shadow: 0 4px 16px rgba(44, 62, 80, 0.25);
 }
+.nav-bar :deep(.el-menu-item) {
+  color: #ecf0f1;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+.nav-bar :deep(.el-menu-item:hover),
+.nav-bar :deep(.el-menu-item.is-active) {
+  background: rgba(255,255,255,0.1);
+  color: #3498db;
+  border-bottom-color: #3498db;
+}
+
 .page-container {
   width: 90%;
   max-width: 1200px;
@@ -271,25 +289,52 @@ const logout = () => {
   text-align: center;
 }
 .page-title {
-  font-size: 22px;
-  margin-bottom: 20px;
+  font-size: 24px;
+  margin-bottom: 24px;
   text-align: center;
+  font-weight: 800;
+  color: #2c3e50;
+  letter-spacing: 1px;
 }
 .card-container {
-  padding: 20px;
+  padding: 28px;
   text-align: left;
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
 }
 .marketing-card {
   height: 100%;
-  padding: 15px;
+  padding: 20px;
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  transition: all 0.3s;
+}
+.marketing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
 }
 .card-title {
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 15px;
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 18px;
   text-align: center;
+  color: #2c3e50;
 }
 .card-content {
   text-align: left;
+}
+.card-content .el-button--primary {
+  background: linear-gradient(135deg, #ff7e5f 0%, #ff6b35 100%);
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(255, 107, 53, 0.35);
+  transition: all 0.3s;
+}
+.card-content .el-button--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.45);
 }
 </style>

@@ -246,11 +246,29 @@ const logout = () => {
   min-height: 100vh;
   background: #f5f7fa;
 }
+
+/* 导航栏统一 */
 .nav-bar {
   width: 100%;
   display: flex !important;
   justify-content: center !important;
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  border: none;
+  box-shadow: 0 4px 16px rgba(44, 62, 80, 0.25);
 }
+.nav-bar :deep(.el-menu-item) {
+  color: #ecf0f1;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+.nav-bar :deep(.el-menu-item:hover),
+.nav-bar :deep(.el-menu-item.is-active) {
+  background: rgba(255,255,255,0.1);
+  color: #3498db;
+  border-bottom-color: #3498db;
+}
+
 .page-container {
   width: 90%;
   max-width: 1200px;
@@ -258,31 +276,85 @@ const logout = () => {
   padding: 30px 0;
 }
 .page-title {
-  font-size: 22px;
-  margin-bottom: 20px;
+  font-size: 24px;
+  margin-bottom: 24px;
   text-align: center;
+  font-weight: 800;
+  color: #2c3e50;
+  letter-spacing: 1px;
 }
 .card-container {
-  padding: 20px;
+  padding: 28px;
   text-align: left;
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
 }
+
+/* 财务数据卡片：渐变背景 */
 .finance-card {
   text-align: center;
-  padding: 20px 0;
+  padding: 24px 0;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  transition: all 0.3s;
+}
+.finance-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
 }
 .finance-card .title {
-  font-size: 14px;
-  color: #666;
+  font-size: 15px;
+  color: rgba(255,255,255,0.9);
   margin-bottom: 10px;
+  font-weight: 600;
 }
 .finance-card .value {
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
+  font-size: 28px;
+  font-weight: 800;
+  color: #fff;
 }
+
 .filter {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.filter :deep(.el-input__wrapper),
+.filter :deep(.el-date-editor) {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  border: 2px solid #ecf0f1;
+  padding: 8px 16px;
+  transition: all 0.3s;
+}
+.filter :deep(.el-input__wrapper.is-focus),
+.filter :deep(.el-date-editor.is-focus) {
+  border-color: #3498db;
+  box-shadow: 0 6px 18px rgba(52, 152, 219, 0.18);
+}
+.filter .el-button {
+  border-radius: 12px;
+  height: 40px;
+  padding: 0 20px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+.filter .el-button--primary {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  border: none;
+  box-shadow: 0 4px 14px rgba(52, 152, 219, 0.35);
+}
+.filter .el-button--success {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  border: none;
+  box-shadow: 0 4px 14px rgba(17, 153, 142, 0.35);
+}
+.filter .el-button:hover {
+  transform: translateY(-2px);
 }
 </style>

@@ -139,14 +139,114 @@ const logout = () => { localStorage.clear(); router.push('/login') }
 </script>
 
 <style scoped>
-.page-wrapper { width:100%; min-height:100vh; background:#f5f7fa }
-.nav-bar { width:100%; display:flex; justify-content:center }
-.page-container { width:90%; max-width:1400px; margin:0 auto; padding:30px 0 }
-.page-title { font-size:22px; margin-bottom:20px; text-align:center }
-.card-container { padding:20px; text-align:left }
-.filter { display:flex; align-items:center }
-.data-card { text-align:center; padding:16px 0 }
-.data-card .title { font-size:14px; color:#666; margin-bottom:6px }
-.data-card .value { font-size:20px; font-weight:bold }
-.chart-title { font-size:16px; font-weight:bold; margin-bottom:12px; text-align:center }
+.page-wrapper { 
+  width: 100%; 
+  min-height: 100vh; 
+  background: #f5f7fa;
+}
+
+/* 导航栏统一 */
+.nav-bar { 
+  width: 100%; 
+  display: flex; 
+  justify-content: center;
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  border: none;
+  box-shadow: 0 4px 16px rgba(44, 62, 80, 0.25);
+}
+.nav-bar :deep(.el-menu-item) {
+  color: #ecf0f1;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+.nav-bar :deep(.el-menu-item:hover),
+.nav-bar :deep(.el-menu-item.is-active) {
+  background: rgba(255,255,255,0.1);
+  color: #3498db;
+  border-bottom-color: #3498db;
+}
+
+.page-container { 
+  width: 90%; 
+  max-width: 1400px; 
+  margin: 0 auto; 
+  padding: 30px 0;
+}
+.page-title { 
+  font-size: 24px; 
+  margin-bottom: 24px; 
+  text-align: center;
+  font-weight: 800;
+  color: #2c3e50;
+  letter-spacing: 1px;
+}
+.card-container { 
+  padding: 28px; 
+  text-align: left;
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+}
+.filter { 
+  display: flex; 
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.filter :deep(.el-select__wrapper) {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  border: 2px solid #ecf0f1;
+  padding: 8px 16px;
+  transition: all 0.3s;
+}
+.filter :deep(.el-select__wrapper.is-focus) {
+  border-color: #3498db;
+  box-shadow: 0 6px 18px rgba(52, 152, 219, 0.18);
+}
+.filter .el-button--primary {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(52, 152, 219, 0.35);
+  transition: all 0.3s;
+}
+.filter .el-button--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(52, 152, 219, 0.45);
+}
+
+/* 数据卡片：多彩渐变 */
+.data-card { 
+  text-align: center; 
+  padding: 20px 0;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  transition: all 0.3s;
+}
+.data-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+}
+.data-card .title { 
+  font-size: 14px; 
+  color: #2c3e50; 
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.data-card .value { 
+  font-size: 22px; 
+  font-weight: 800;
+  color: #2c3e50;
+}
+.chart-title { 
+  font-size: 18px; 
+  font-weight: 800; 
+  margin-bottom: 16px; 
+  text-align: center;
+  color: #2c3e50;
+}
 </style>
