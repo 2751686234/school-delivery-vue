@@ -160,8 +160,173 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.wrap{width:100%;min-height:100vh;background:#f5f7fa}
-.nav-bar{display:flex;justify-content:center}
-.container{width:90%;max-width:1200px;margin:0 auto;padding:30px 0}
-.title{font-size:24px;margin-bottom:20px;text-align:center}
+.wrap {
+  width: 100%;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+/* 导航栏统一 */
+.nav-bar {
+  display: flex;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a2a6c 0%, #2c3e50 100%);
+  border: none;
+  box-shadow: 0 4px 16px rgba(26, 42, 108, 0.25);
+}
+.nav-bar :deep(.el-menu-item) {
+  color: #ecf0f1;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+.nav-bar :deep(.el-menu-item:hover),
+.nav-bar :deep(.el-menu-item.is-active) {
+  background: rgba(255,255,255,0.12);
+  color: #3498db;
+  border-bottom-color: #3498db;
+}
+
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 0;
+}
+.title {
+  font-size: 26px;
+  margin-bottom: 24px;
+  text-align: center;
+  font-weight: 800;
+  color: #1a2a6c;
+  letter-spacing: 1px;
+}
+.container > .el-card {
+  padding: 28px;
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+}
+.container > .el-card > div:first-child {
+  margin-bottom: 20px;
+  text-align: left;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.container > .el-card > div:first-child :deep(.el-input__wrapper) {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  border: 2px solid #ecf0f1;
+  padding: 8px 16px;
+  transition: all 0.3s;
+}
+.container > .el-card > div:first-child :deep(.el-input__wrapper.is-focus) {
+  border-color: #3498db;
+  box-shadow: 0 6px 18px rgba(52, 152, 219, 0.18);
+}
+.container > .el-card > div:first-child .el-button {
+  border-radius: 12px;
+  height: 40px;
+  padding: 0 20px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+.container > .el-card > div:first-child .el-button--primary {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  border: none;
+  box-shadow: 0 4px 14px rgba(52, 152, 219, 0.35);
+}
+.container > .el-card > div:first-child .el-button--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(52, 152, 219, 0.45);
+}
+
+/* 表格美化 */
+.wrap :deep(.el-table) {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  border: none;
+}
+.wrap :deep(.el-table th) {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #1a2a6c;
+  font-weight: 800;
+  font-size: 15px;
+}
+.wrap :deep(.el-table--border::after),
+.wrap :deep(.el-table--group::after) {
+  background-color: transparent;
+}
+.wrap .el-button {
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+.wrap .el-button--primary {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+.wrap .el-button--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(52, 152, 219, 0.4);
+}
+.wrap .el-button--danger {
+  background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(235, 51, 73, 0.3);
+}
+.wrap .el-button--danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(235, 51, 73, 0.4);
+}
+.wrap .el-button--info {
+  background: linear-gradient(135deg, #606c88 0%, #3f4c6b 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(96, 108, 136, 0.3);
+}
+.wrap .el-button--info:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(96, 108, 136, 0.4);
+}
+.wrap .el-button--success {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(17, 153, 142, 0.3);
+}
+.wrap .el-button--success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(17, 153, 142, 0.4);
+}
+
+/* 弹窗美化 */
+.wrap :deep(.el-dialog) {
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.wrap :deep(.el-dialog__header) {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  margin: 0;
+  padding: 22px 24px;
+}
+.wrap :deep(.el-dialog__title) {
+  color: #1a2a6c;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+.wrap :deep(.el-input__wrapper) {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  border: 2px solid #ecf0f1;
+  padding: 8px 16px;
+  transition: all 0.3s;
+}
+.wrap :deep(.el-input__wrapper.is-focus) {
+  border-color: #3498db;
+  box-shadow: 0 6px 18px rgba(52, 152, 219, 0.18);
+}
 </style>

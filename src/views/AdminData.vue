@@ -113,11 +113,117 @@ onMounted(() => loadAll())
 </script>
 
 <style scoped>
-.wrap{width:100%;min-height:100vh;background:#f5f7fa}
-.nav-bar{display:flex;justify-content:center}
-.container{width:90%;max-width:1400px;margin:0 auto;padding:30px 0;text-align:center}
-.title{font-size:22px;margin-bottom:20px}
-.sub-title{font-size:16px;font-weight:bold;margin-bottom:15px}
-.k{color:#666;margin-bottom:6px}
-.v{font-size:20px;font-weight:bold;color:#1989fa}
+.wrap {
+  width: 100%;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+/* 导航栏统一 */
+.nav-bar {
+  display: flex;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a2a6c 0%, #2c3e50 100%);
+  border: none;
+  box-shadow: 0 4px 16px rgba(26, 42, 108, 0.25);
+}
+.nav-bar :deep(.el-menu-item) {
+  color: #ecf0f1;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+.nav-bar :deep(.el-menu-item:hover),
+.nav-bar :deep(.el-menu-item.is-active) {
+  background: rgba(255,255,255,0.12);
+  color: #3498db;
+  border-bottom-color: #3498db;
+}
+
+.container {
+  width: 90%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 0;
+  text-align: center;
+}
+.title {
+  font-size: 26px;
+  margin-bottom: 28px;
+  font-weight: 800;
+  color: #1a2a6c;
+  letter-spacing: 1px;
+}
+
+/* 数据卡片：多彩渐变 */
+.container > .el-row > .el-col > .el-card {
+  padding: 28px 0;
+  text-align: center;
+  border-radius: 20px;
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+.container > .el-row > .el-col > .el-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+}
+.k {
+  font-size: 15px;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+.v {
+  font-size: 30px;
+  font-weight: 800;
+  color: #fff;
+}
+.el-col:nth-child(1) .el-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.el-col:nth-child(2) .el-card {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+.el-col:nth-child(3) .el-card {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+.el-col:nth-child(4) .el-card {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+/* 图表卡片 */
+.container > .el-card {
+  padding: 28px;
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+  margin-bottom: 24px;
+}
+.sub-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  color: #1a2a6c;
+}
+
+/* 表格美化 */
+.wrap :deep(.el-table) {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  border: none;
+}
+.wrap :deep(.el-table th) {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #1a2a6c;
+  font-weight: 800;
+  font-size: 15px;
+}
+.wrap :deep(.el-table--border::after),
+.wrap :deep(.el-table--group::after) {
+  background-color: transparent;
+}
 </style>

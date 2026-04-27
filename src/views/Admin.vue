@@ -151,54 +151,104 @@ onMounted(() => {
   min-height: 100vh;
   background: #f5f7fa;
 }
+
+/* 导航栏：深邃科技蓝渐变 */
 .nav-bar {
   display: flex;
   justify-content: center;
-  background: #fff;
-  border-bottom: 1px solid #eee;
+  background: linear-gradient(135deg, #1a2a6c 0%, #2c3e50 100%);
+  border: none;
+  box-shadow: 0 4px 16px rgba(26, 42, 108, 0.25);
 }
+.nav-bar :deep(.el-menu-item) {
+  color: #ecf0f1;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+.nav-bar :deep(.el-menu-item:hover),
+.nav-bar :deep(.el-menu-item.is-active) {
+  background: rgba(255,255,255,0.12);
+  color: #3498db;
+  border-bottom-color: #3498db;
+}
+
 .page-container {
   width: 90%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 30px 0;
+  padding: 32px 0;
 }
 .page-title {
-  font-size: 26px;
-  font-weight: bold;
-  margin-bottom: 30px;
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 32px;
   text-align: center;
+  color: #1a2a6c;
+  letter-spacing: 1px;
 }
+
+/* 数据总览卡片：多彩渐变 */
 .overview-card {
-  padding: 28px 0;
+  padding: 32px 0;
   text-align: center;
+  border-radius: 20px;
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+.overview-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.18);
 }
 .overview-card .label {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 8px;
+  font-size: 15px;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 10px;
+  font-weight: 600;
 }
 .overview-card .num {
-  font-size: 28px;
-  font-weight: bold;
-  color: #333;
+  font-size: 32px;
+  font-weight: 800;
+  color: #fff;
 }
+.el-col:nth-child(1) .overview-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.el-col:nth-child(2) .overview-card {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+.el-col:nth-child(3) .overview-card {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+.el-col:nth-child(4) .overview-card {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+/* 功能入口卡片 */
 .func-card {
-  padding: 32px 0;
+  padding: 36px 0;
   cursor: pointer;
   transition: all 0.3s;
   text-align: center;
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
 }
 .func-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-8px);
+  box-shadow: 0 14px 36px rgba(0,0,0,0.14);
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
 }
 .func-card .icon {
-  font-size: 36px;
-  margin-bottom: 10px;
+  font-size: 48px;
+  margin-bottom: 12px;
 }
 .func-card .text {
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a2a6c;
 }
 </style>
