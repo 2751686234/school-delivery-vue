@@ -261,7 +261,6 @@ onMounted(() => loadSetting())
   color: #3498db;
   border-bottom-color: #3498db;
 }
-
 .page-container {
   width: 90%;
   max-width: 1000px;
@@ -283,7 +282,6 @@ onMounted(() => loadSetting())
   border: none;
   box-shadow: 0 8px 28px rgba(0,0,0,0.08);
 }
-
 /* Tabs 美化 */
 .card-container :deep(.el-tabs__header) {
   background: linear-gradient(135deg, #f8f9fa 0%, #ecf0f1 100%);
