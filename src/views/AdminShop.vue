@@ -23,16 +23,22 @@
           <el-button type="success" @click="openAdd">新增商店</el-button>
         </div>
 
-        <el-table :data="list" border align="center">
-          <el-table-column prop="id" label="ID" width="80" />
-          <el-table-column prop="name" label="商店名称" />
+        <el-table 
+          :data="list" 
+          border 
+          align="center"
+          class="shop-table"
+          :fit="true"
+          :scroll="{ x: false }"
+        >
+          <el-table-column prop="id" label="ID" width="60" />
+          <el-table-column prop="name" label="商店名称" min-width="100" />
 
-          <!-- 商家信息 -->
-          <el-table-column prop="merchantUsername" label="商家账号" width="130" />
-          <el-table-column prop="merchantName" label="商家姓名" width="120" />
-          <el-table-column prop="merchantPhone" label="商家电话" width="130" />
+          <el-table-column prop="merchantUsername" label="商家账号" width="100" />
+          <el-table-column prop="merchantName" label="商家姓名" width="100" />
+          <el-table-column prop="merchantPhone" label="商家电话" width="120" />
 
-          <el-table-column prop="logo" label="Logo">
+          <el-table-column prop="logo" label="Logo" width="80">
             <template #default="scope">
               <img 
                 :src="'http://localhost:8080' + scope.row.logo" 
@@ -47,9 +53,9 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="lng" label="经度" />
-          <el-table-column prop="lat" label="纬度" />
-          <el-table-column prop="status" label="营业状态" width="110">
+          <el-table-column prop="lng" label="经度" width="90" />
+          <el-table-column prop="lat" label="纬度" width="90" />
+          <el-table-column prop="status" label="营业状态" width="90">
             <template #default="scope">
               <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'">
                 {{ scope.row.status === 1 ? '营业中' : '已停业' }}
@@ -57,7 +63,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="操作" width="260">
+          <el-table-column label="操作" width="270">
             <template #default="scope">
               <el-button size="small" @click="openEdit(scope.row)">编辑</el-button>
               <el-button size="small" :type="scope.row.status === 1 ? 'info' : 'success'" @click="toggleStatus(scope.row)">
@@ -229,8 +235,8 @@ onMounted(() => {
 }
 
 .container {
-  width: 90%;
-  max-width: 1200px;
+  width: 94%;
+  max-width: 1300px;
   margin: 0 auto;
   padding: 32px 0;
 }
@@ -291,13 +297,13 @@ onMounted(() => {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(17, 153, 142, 0.45);
 }
-
-/* 表格美化 */
 .wrap :deep(.el-table) {
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 6px 20px rgba(0,0,0,0.06);
   border: none;
+  table-layout: fixed;
+  width: 100%;
 }
 .wrap :deep(.el-table th) {
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -309,10 +315,15 @@ onMounted(() => {
 .wrap :deep(.el-table--group::after) {
   background-color: transparent;
 }
-.wrap .el-button {
+.wrap :deep(.el-table .el-button) {
   border-radius: 10px;
   font-weight: 600;
   transition: all 0.3s;
+  padding: 5px 10px;
+  font-size: 12px;
+}
+.wrap :deep(.el-table .el-button + .el-button) {
+  margin-left: 7px;
 }
 .wrap .el-button--primary {
   background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
