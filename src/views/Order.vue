@@ -38,33 +38,49 @@
           <div style="margin-top:10px;display:flex;gap:8px;">
             <el-button v-if="order.status === 1" type="danger" size="small" @click="handleCancelOrder(order.id)">取消订单</el-button>
             <el-button type="info" size="small" @click="handleUserDeleteOrder(order.id)">删除订单记录</el-button>
-            <!-- 新增：查看详情按钮 -->
             <el-button type="primary" size="small" @click="openDetail(order)">查看详情</el-button>
           </div>
         </el-card>
       </div>
     </div>
 
-    <!-- 订单详情弹窗 -->
-    <el-dialog v-model="showDetail" title="订单详情" width="500px" append-to-body>
-      <div v-if="currentDetail" class="detail-box">
-        <div class="line"><label>订单号：</label>{{ currentDetail.orderNo }}</div>
-        <div class="line"><label>商家名称：</label>{{ currentDetail.shopName }}</div>
-        <div class="line"><label>商家电话：</label>{{ currentDetail.shopPhone || '未获取' }}</div>
-        <div class="line"><label>骑手姓名：</label>{{ currentDetail.riderName || '未接单' }}</div>
-        <div class="line"><label>骑手电话：</label>{{ currentDetail.riderPhone || '未接单' }}</div>
-        <div class="line"><label>收货地址：</label>{{ currentDetail.address }}</div>
-        <div class="line"><label>总金额：</label>¥{{ currentDetail.totalPrice }}</div>
+    <!-- 订单详情弹窗：商品清单 -->
+    <el-dialog v-model="showDetail" title="订单详情" width="700px" append-to-body>
+      <!-- 订单基本信息 -->
+      <el-descriptions :column="2" border size="small" style="margin-bottom:20px">
+        <el-descriptions-item label="订单号" :span="2">{{ currentDetail.orderNo }}</el-descriptions-item>
+        <el-descriptions-item label="商家名称">{{ currentDetail.shopName }}</el-descriptions-item>
+        <el-descriptions-item label="商家电话">{{ currentDetail.shopPhone || '未获取' }}</el-descriptions-item>
+        <el-descriptions-item label="骑手姓名">{{ currentDetail.riderName || '未接单' }}</el-descriptions-item>
+        <el-descriptions-item label="骑手电话">{{ currentDetail.riderPhone || '未接单' }}</el-descriptions-item>
+        <el-descriptions-item label="收货地址" :span="2">{{ currentDetail.address }}</el-descriptions-item>
+        <el-descriptions-item label="订单状态">
+          <el-tag :type="getStatusTagType(currentDetail.status)">{{ getStatusText(currentDetail.status) }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="下单时间">{{ formatTime(currentDetail.createTime) }}</el-descriptions-item>
+      </el-descriptions>
 
-        <div class="goods-section">
-          <div class="title">商品清单</div>
-          <div class="goods-item" v-for="(g, i) in goodsList" :key="i">
-            <span>• {{ g.goodsName }}</span>
-            <span>x{{ g.num }}</span>
-            <span>¥{{ g.price }}</span>
-          </div>
-        </div>
+      <!-- 商品清单 -->
+      <h4 style="margin-bottom:12px;color:#ff6b35;font-size:16px">商品清单</h4>
+      <el-table :data="goodsList" border style="width:100%" align="center">
+        <el-table-column type="index" label="序号" width="60" align="center" />
+        <el-table-column prop="goods_name" label="商品名称" align="center" />
+        <el-table-column prop="num" label="数量" width="80" align="center" />
+        <el-table-column prop="price" label="单价（¥）" width="120" align="center" />
+        <el-table-column label="小计（¥）" width="120" align="center">
+          <template #default="scope">
+            {{ (scope.row.num * scope.row.price).toFixed(2) }}
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div style="margin-top: 20px; text-align: right; font-size: 18px;">
+        订单总金额：<span style="color: #ff6b35; font-weight: bold;">¥{{ currentDetail.totalPrice }}</span>
       </div>
+
+      <template #footer>
+        <el-button @click="showDetail = false">关闭</el-button>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -83,12 +99,24 @@ const showDetail = ref(false)
 const currentDetail = ref(null)
 const goodsList = ref([])
 
+// 状态文本
+const getStatusText = (status) => {
+  const map = { 1: '待接单', 2: '已接单', 3: '配送中', 4: '已完成', 5: '已取消' }
+  return map[status] || '未知'
+}
+const getStatusTagType = (status) => {
+  if (status === 4) return 'success'
+  if (status === 5) return 'danger'
+  if (status === 1) return 'warning'
+  return 'primary'
+}
+
 // 打开订单详情
 const openDetail = async (order) => {
   try {
     currentDetail.value = order
 
-    // 查询商品
+    // 查询商品清单
     const res = await request.get('/order/goods/detail', {
       params: { orderId: order.id }
     })
@@ -160,7 +188,6 @@ onMounted(() => {
   background: #f8f9fa; 
 }
 
-/* 导航栏：统一 */
 .nav { 
   width: 100%; 
   background: linear-gradient(135deg, #ff7e5f 0%, #ff6b35 100%);
@@ -187,9 +214,7 @@ onMounted(() => {
   padding: 28px 0; 
 }
 
-.text-center { 
-  text-align: center; 
-}
+.text-center { text-align: center; }
 
 .container h2 {
   font-size: 26px;
@@ -199,9 +224,7 @@ onMounted(() => {
   letter-spacing: 1px;
 }
 
-.order-item { 
-  margin-bottom: 20px; 
-}
+.order-item { margin-bottom: 20px; }
 .order-item :deep(.el-card) {
   border-radius: 16px;
   border: none;
@@ -212,19 +235,8 @@ onMounted(() => {
   box-shadow: 0 12px 32px rgba(0,0,0,0.12);
 }
 
-.loading { 
-  text-align: center; 
-  padding: 40px; 
-  color: #909399;
-  font-size: 16px;
-}
-.empty { 
-  text-align: center; 
-  padding: 60px; 
-  color: #909399; 
-  font-size: 18px;
-  font-weight: 500;
-}
+.loading { text-align: center; padding: 40px; color: #909399; font-size: 16px; }
+.empty { text-align: center; padding: 60px; color: #909399; font-size: 18px; font-weight: 500; }
 
 /* 详情弹窗 */
 .order-page :deep(.el-dialog) {
@@ -237,41 +249,6 @@ onMounted(() => {
   padding: 20px;
 }
 .order-page :deep(.el-dialog__title) {
-  color: #ff6b35;
-  font-weight: 700;
-}
-
-.detail-box { 
-  padding: 10px 0; 
-}
-.line { 
-  margin: 12px 0; 
-  font-size: 15px; 
-}
-label { 
-  font-weight: 700; 
-  color: #ff6b35; 
-  margin-right: 8px;
-}
-.goods-section { 
-  margin-top: 20px; 
-  padding-top: 16px;
-  border-top: 2px dashed #f0f0f0;
-}
-.goods-section .title { 
-  font-weight: 800; 
-  margin-bottom: 12px; 
-  color: #ff6b35;
-  font-size: 17px;
-}
-.goods-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid #f5f5f5;
-  font-size: 14px;
-}
-.goods-item span:last-child {
   color: #ff6b35;
   font-weight: 700;
 }

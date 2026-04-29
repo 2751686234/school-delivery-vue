@@ -24,13 +24,10 @@
             <el-option label="已取消" value="5"></el-option>
           </el-select>
 
-          <!-- 订单号搜索 -->
           <el-input v-model="searchNo" placeholder="搜索订单号" style="width: 200px; margin-right: 10px;" />
-          <!-- 客户姓名搜索 -->
           <el-input v-model="searchName" placeholder="搜索客户姓名" style="width: 200px; margin-right: 10px;" />
 
           <el-button type="primary" @click="searchOrder">搜索</el-button>
-
           <el-button style="margin-left:10px" @click="resetSearch">重置</el-button>
         </div>
 
@@ -60,21 +57,40 @@
               <el-button type="danger" size="small" @click="handleCancel(scope.row)" v-if="scope.row.status === 1">
                 取消订单
               </el-button>
-              <el-button size="small" @click="handleDetail(scope.row)" v-else>
-                查看详情
-              </el-button>
+              <el-button size="small" @click="handleDetail(scope.row)">查看详情</el-button>
             </template>
           </el-table-column>
         </el-table>
 
-        <el-dialog v-model="showDetail" title="订单详情" width="600px">
+        <!-- 订单详情弹窗：商品清单 -->
+        <el-dialog v-model="showDetail" title="订单详情" width="700px">
+          <!-- 订单基本信息 -->
+          <el-descriptions :column="2" border size="small" style="margin-bottom:20px">
+            <el-descriptions-item label="订单号" :span="2">{{ currentOrder.orderNo }}</el-descriptions-item>
+            <el-descriptions-item label="客户姓名">{{ currentOrder.name }}</el-descriptions-item>
+            <el-descriptions-item label="联系电话">{{ currentOrder.phone }}</el-descriptions-item>
+            <el-descriptions-item label="收货地址" :span="2">{{ currentOrder.address }}</el-descriptions-item>
+            <el-descriptions-item label="订单状态">
+              <el-tag :type="getTagType(currentOrder.status)">{{ getStatusText(currentOrder.status) }}</el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="下单时间">{{ formatTime(currentOrder.createTime) }}</el-descriptions-item>
+          </el-descriptions>
+
+          <!-- 商品清单 -->
+          <h4 style="margin-bottom:12px;color:#2c3e50;font-size:16px">商品清单</h4>
           <el-table :data="orderDetail" border style="width: 100%;" align="center">
-            <el-table-column prop="name" label="商品名称" align="center" />
-            <el-table-column prop="num" label="商品数量" align="center" />
-            <el-table-column prop="price" label="商品单价" align="center" />
-            <el-table-column prop="total" label="小计" align="center" />
+            <el-table-column type="index" label="序号" width="60" align="center" />
+            <el-table-column prop="goods_name" label="商品名称" align="center" />
+            <el-table-column prop="num" label="数量" width="80" align="center" />
+            <el-table-column prop="price" label="单价（¥）" width="120" align="center" />
+            <el-table-column label="小计（¥）" width="120" align="center">
+              <template #default="scope">
+                {{ (scope.row.num * scope.row.price).toFixed(2) }}
+              </template>
+            </el-table-column>
           </el-table>
-          <div style="margin-top: 20px; text-align: right;">
+
+          <div style="margin-top: 20px; text-align: right; font-size: 18px;">
             订单总金额：<span style="color: red; font-weight: bold;">¥{{ currentOrder.totalPrice }}</span>
           </div>
           <template #footer>
@@ -133,12 +149,18 @@ const getTagType = (status) => {
   }
 }
 
-const handleDetail = (row) => {
+// 🔥 查看详情 — 从后端获取真实商品清单
+const handleDetail = async (row) => {
   currentOrder.value = row
-  orderDetail.value = [
-    { name: '香辣鸡腿堡', num: 2, price: 15.9, total: 31.8 },
-    { name: '珍珠奶茶', num: 1, price: 12.9, total: 12.9 }
-  ]
+  try {
+    const res = await request.get('/order/goods/detail', {
+      params: { orderId: row.id }
+    })
+    orderDetail.value = res.data || []
+  } catch (e) {
+    ElMessage.error('加载商品清单失败')
+    orderDetail.value = []
+  }
   showDetail.value = true
 }
 
@@ -149,7 +171,7 @@ const getShopOrders = async () => {
     orderList.value = res.data || []
     originOrderList.value = res.data || []
     
-    // 自动接单逻辑：检查新订单是否需要自动接单
+    // 自动接单逻辑
     const settingRes = await request.get('/shop/setting/get', { params: { userId: user.id } })
     const autoAccept = settingRes.data?.autoAccept
     if (autoAccept == 1) {
@@ -158,9 +180,7 @@ const getShopOrders = async () => {
           try {
             await takeOrder(order.id)
             order.status = 2
-          } catch (e) {
-            // 忽略失败
-          }
+          } catch (e) { /* 忽略 */ }
         }
       }
     }
@@ -189,31 +209,15 @@ const handleCancel = async (row) => {
   }
 }
 
-// 搜索：状态 + 订单号 + 客户姓名
 const searchOrder = () => {
   let filterList = [...originOrderList.value]
-
-  // 按状态筛选
-  if (status.value) {
-    filterList = filterList.filter(item => item.status === Number(status.value))
-  }
-  // 按订单号筛选
-  if (searchNo.value) {
-    filterList = filterList.filter(item => item.orderNo.includes(searchNo.value))
-  }
-  // 按客户姓名筛选
-  if (searchName.value) {
-    filterList = filterList.filter(item => item.name && item.name.includes(searchName.value))
-  }
-
+  if (status.value) filterList = filterList.filter(item => item.status === Number(status.value))
+  if (searchNo.value) filterList = filterList.filter(item => item.orderNo.includes(searchNo.value))
+  if (searchName.value) filterList = filterList.filter(item => item.name && item.name.includes(searchName.value))
   orderList.value = filterList
-
-  if (filterList.length === 0) {
-    ElMessage.info('未找到符合条件的订单')
-  }
+  if (filterList.length === 0) ElMessage.info('未找到符合条件的订单')
 }
 
-// 重置搜索
 const resetSearch = () => {
   status.value = ''
   searchNo.value = ''
@@ -227,9 +231,7 @@ const formatTime = (time) => {
   return new Date(time).toLocaleString()
 }
 
-onMounted(() => {
-  getShopOrders()
-})
+onMounted(() => { getShopOrders() })
 </script>
 
 <style scoped>
@@ -239,7 +241,6 @@ onMounted(() => {
   background: #f5f7fa;
 }
 
-/* 导航栏：与全端统一 */
 .nav-bar {
   width: 100%;
   display: flex !important;
