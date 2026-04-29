@@ -83,12 +83,23 @@ const monthAmount = ref(0)
 const totalOrderCount = ref(0)
 const totalAmount = ref(0)
 const tableData = ref([])
+const platformRate = ref(15) // 动态抽成比例
 
 // 加载总览数据
 const loadOverview = async () => {
   const res = await request.get('/admin/finance/overview')
   todayAmount.value = res.data.todayAmount || 0
   monthAmount.value = res.data.monthAmount || 0
+}
+
+// 加载系统配置获取抽成比例
+const loadRate = async () => {
+  try {
+    const res = await request.get('/admin/config/get')
+    platformRate.value = res.data.platform_rate || 15
+  } catch (e) {
+    platformRate.value = 15
+  }
 }
 
 // 日期范围查询
@@ -106,8 +117,9 @@ const query = async () => {
 
   const count = res.data.orderCount || 0
   const amount = res.data.totalAmount || 0
-  const shopSettle = (amount * 0.85).toFixed(2) // 商家分85%
-  const profit = (amount * 0.15).toFixed(2)     // 平台利润15%
+  const rate = platformRate.value / 100
+  const shopSettle = (amount * (1 - rate)).toFixed(2)
+  const profit = (amount * rate).toFixed(2)
 
   tableData.value = [{
     date: startDate + ' ~ ' + endDate,
@@ -136,6 +148,7 @@ const logout = () => {
 
 onMounted(() => {
   loadOverview()
+  loadRate()
 })
 </script>
 

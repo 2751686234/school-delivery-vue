@@ -10,14 +10,29 @@
 
     <div class="container">
       <h2 class="text-center">商家列表</h2>
+      
+      <!-- 商家列表 -->
       <div class="list">
-        <el-card v-for="shop in shopList" :key="shop.id" @click="selectShop(shop)">
-          <img 
-            :src="shop.logo ? 'http://localhost:8080' + shop.logo : 'https://picsum.photos/300/200'" 
-            class="shop-img" 
-          />
-          <div class="text-center shop-name">{{ shop.name }}</div>
-        </el-card>
+        <template v-if="selectedShopId">
+          <!-- 只显示选中的商家 -->
+          <el-card v-for="shop in shopList.filter(s => s.id === selectedShopId)" :key="shop.id" @click="selectShop(shop)">
+            <img 
+              :src="shop.logo ? 'http://localhost:8080' + shop.logo : 'https://picsum.photos/300/200'" 
+              class="shop-img" 
+            />
+            <div class="text-center shop-name">{{ shop.name }}</div>
+          </el-card>
+          <el-button type="info" @click="backToList" style="margin-top:12px">← 返回商家列表</el-button>
+        </template>
+        <template v-else>
+          <el-card v-for="shop in shopList" :key="shop.id" @click="selectShop(shop)">
+            <img 
+              :src="shop.logo ? 'http://localhost:8080' + shop.logo : 'https://picsum.photos/300/200'" 
+              class="shop-img" 
+            />
+            <div class="text-center shop-name">{{ shop.name }}</div>
+          </el-card>
+        </template>
       </div>
 
       <div v-if="currentShop.id" class="food-section">
@@ -65,6 +80,7 @@ import request from '@/utils/request'
 const shopList = ref([])
 const currentShop = ref({})
 const goodsList = ref([])
+const selectedShopId = ref(null)
 
 // 弹窗
 const showBuyDialog = ref(false)
@@ -81,10 +97,18 @@ const getShopList = () => {
 // 选择商家 → 加载该商家的商品
 const selectShop = async (shop) => {
   currentShop.value = shop
+  selectedShopId.value = shop.id
   const res = await request.get('/user/goods/shop', {
     params: { shopId: shop.id }
   })
   goodsList.value = res.data
+}
+
+// 返回全部商家列表
+const backToList = () => {
+  selectedShopId.value = null
+  currentShop.value = {}
+  goodsList.value = []
 }
 
 // 打开弹窗

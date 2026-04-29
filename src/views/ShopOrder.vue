@@ -91,6 +91,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getShopOrderList, takeOrder, cancelShopOrder } from '@/api/order'
+import request from '@/utils/request'
 
 const router = useRouter()
 const orderList = ref([])
@@ -147,7 +148,25 @@ const getShopOrders = async () => {
     const res = await getShopOrderList(user.id)
     orderList.value = res.data || []
     originOrderList.value = res.data || []
-  } catch (err) {}
+    
+    // 自动接单逻辑：检查新订单是否需要自动接单
+    const settingRes = await request.get('/shop/setting/get', { params: { userId: user.id } })
+    const autoAccept = settingRes.data?.autoAccept
+    if (autoAccept == 1) {
+      for (const order of orderList.value) {
+        if (order.status === 1) {
+          try {
+            await takeOrder(order.id)
+            order.status = 2
+          } catch (e) {
+            // 忽略失败
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error(err)
+  }
 }
 
 const handleTake = async (row) => {
@@ -312,19 +331,6 @@ onMounted(() => {
   color: #2c3e50;
   font-weight: 700;
 }
-.goods-img {
-  width: 56px;
-  height: 56px;
-  object-fit: cover;
-  border-radius: 10px;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  transition: all 0.3s;
-}
-.goods-img:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-}
 
 /* 弹窗美化 */
 .page-wrapper :deep(.el-dialog) {
@@ -342,16 +348,5 @@ onMounted(() => {
   font-weight: 800;
   font-size: 18px;
   letter-spacing: 1px;
-}
-.page-wrapper :deep(.el-input__wrapper) {
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-  border: 2px solid #ecf0f1;
-  padding: 8px 16px;
-  transition: all 0.3s;
-}
-.page-wrapper :deep(.el-input__wrapper.is-focus) {
-  border-color: #3498db;
-  box-shadow: 0 6px 18px rgba(52, 152, 219, 0.18);
 }
 </style>

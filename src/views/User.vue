@@ -45,6 +45,7 @@
 
         <div class="button-group">
           <el-button type="primary" @click="openEditDialog">修改信息</el-button>
+          <el-button type="warning" @click="openPwdDialog">修改密码</el-button>
           <el-button type="danger" @click="handleLogout">退出登录</el-button>
         </div>
       </el-card>
@@ -70,6 +71,25 @@
         </span>
       </template>
     </el-dialog>
+
+    <!-- 修改密码弹窗 -->
+    <el-dialog title="修改密码" v-model="showPwdDialog" width="400px">
+      <el-form :model="pwdForm" label-width="100px">
+        <el-form-item label="原密码">
+          <el-input v-model="pwdForm.oldPwd" type="password" placeholder="请输入当前密码" />
+        </el-form-item>
+        <el-form-item label="新密码">
+          <el-input v-model="pwdForm.newPwd" type="password" placeholder="6-16位字母/数字" />
+        </el-form-item>
+        <el-form-item label="确认新密码">
+          <el-input v-model="pwdForm.confirmPwd" type="password" placeholder="再次输入新密码" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showPwdDialog = false">取消</el-button>
+        <el-button type="primary" @click="submitPwd">确定修改</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -87,6 +107,41 @@ const editForm = ref({
   phone: '',
   address: ''
 })
+
+// 修改密码
+const showPwdDialog = ref(false)
+const pwdForm = ref({ oldPwd: '', newPwd: '', confirmPwd: '' })
+
+const openPwdDialog = () => {
+  pwdForm.value = { oldPwd: '', newPwd: '', confirmPwd: '' }
+  showPwdDialog.value = true
+}
+
+const submitPwd = async () => {
+  const { oldPwd, newPwd, confirmPwd } = pwdForm.value
+  if (!oldPwd || !newPwd || !confirmPwd) {
+    return ElMessage.error('请填写完整')
+  }
+  if (newPwd !== confirmPwd) {
+    return ElMessage.error('两次密码不一致')
+  }
+  try {
+    const res = await request.post('/user/update-pwd', {
+      id: userInfo.value.id,
+      oldPwd,
+      newPwd
+    })
+    if (res.code === 200) {
+      ElMessage.success('密码修改成功，请重新登录')
+      showPwdDialog.value = false
+      setTimeout(() => handleLogout(), 1500)
+    } else {
+      ElMessage.error(res.msg)
+    }
+  } catch (err) {
+    ElMessage.error('原密码不正确')
+  }
+}
 
 // 角色映射
 const roleMap = {
@@ -267,6 +322,14 @@ const handleLogout = () => {
 .button-group .el-button--primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 24px rgba(255, 107, 53, 0.45);
+}
+.button-group .el-button--warning {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  box-shadow: 0 6px 18px rgba(245, 87, 108, 0.35);
+}
+.button-group .el-button--warning:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(245, 87, 108, 0.45);
 }
 .button-group .el-button--danger {
   background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);

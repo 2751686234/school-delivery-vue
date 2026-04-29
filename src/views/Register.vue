@@ -29,8 +29,7 @@
         <el-form-item label="注册身份">
           <el-select v-model="registerForm.role" size="large" style="width:100%">
             <el-option label="用户" :value="1" />
-            <el-option label="商家" :value="2" />
-            <el-option label="外送员" :value="3" />
+            <el-option label="配送员" :value="3" />
             <el-option label="管理员" :value="4" />
           </el-select>
         </el-form-item>

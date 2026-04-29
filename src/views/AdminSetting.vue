@@ -97,16 +97,6 @@ const logList = ref([])
 const form = ref({ name: '', logo: '', servicePhone: '', rate: 15 })
 const pwd = ref({ old: '', new: '', confirm: '' })
 
-// 加载配置
-onMounted(() => {
-  request.get('/admin/config/get').then(res => {
-    form.value.name = res.data.platform_name
-    form.value.logo = res.data.logo
-    form.value.servicePhone = res.data.service_phone
-    form.value.rate = res.data.platform_rate
-  })
-})
-
 // 上传LOGO
 const uploadSuccess = (res) => {
   if (res.code === 200) {
@@ -117,8 +107,29 @@ const uploadSuccess = (res) => {
 
 // 保存配置
 const save = async () => {
-  await request.post('/admin/config/save', form.value)
-  ElMessage.success('系统设置已保存')
+  try {
+    const res = await request.post('/admin/config/save', form.value)
+    if (res.code === 200) {
+      ElMessage.success('系统设置已保存')
+      // 同步更新 favicon
+      if (form.value.logo) {
+        updateFavicon(form.value.logo)
+      }
+    }
+  } catch (e) {
+    ElMessage.error('保存失败')
+  }
+}
+
+// 更新网页图标
+const updateFavicon = (url) => {
+  let link = document.querySelector("link[rel*='icon']")
+  if (!link) {
+    link = document.createElement('link')
+    link.rel = 'shortcut icon'
+    document.head.appendChild(link)
+  }
+  link.href = url
 }
 
 // 修改密码
@@ -148,10 +159,38 @@ const updatePwd = async () => {
   }
 }
 
+// 加载系统日志
+const loadLogs = async () => {
+  try {
+    const res = await request.get('/admin/log/list')
+    logList.value = res.data || []
+  } catch (e) {
+    console.error('加载日志失败', e)
+  }
+}
+
 const logout = () => {
   localStorage.clear()
   router.push('/login')
 }
+
+onMounted(() => {
+  // 加载配置
+  request.get('/admin/config/get').then(res => {
+    form.value.name = res.data.platform_name || ''
+    form.value.logo = res.data.logo || ''
+    form.value.servicePhone = res.data.service_phone || ''
+    form.value.rate = res.data.platform_rate || 15
+    
+    // 如果有logo，更新favicon
+    if (form.value.logo) {
+      updateFavicon(form.value.logo)
+    }
+  }).catch(() => ElMessage.error('加载配置失败'))
+  
+  // 加载系统日志
+  loadLogs()
+})
 </script>
 
 <style scoped>

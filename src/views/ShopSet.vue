@@ -21,13 +21,14 @@
                 <el-input v-model="shopForm.name" />
               </el-form-item>
 
+              <!-- 🔥 修复后的上传：去掉 action，改为手动上传 -->
               <el-form-item label="店铺头像">
                 <el-upload
-                  action="http://localhost:8080/file/upload"
+                  :auto-upload="false"
                   list-type="picture-card"
-                  :on-success="handleUploadSuccess"
                   :file-list="avatarList"
                   :limit="1"
+                  @change="handleAvatarUpload"
                 >
                   <el-icon><Plus /></el-icon>
                 </el-upload>
@@ -123,15 +124,29 @@ const deliveryForm = ref({
 
 const avatarList = ref([])
 const pwdForm = ref({ oldPwd: '', newPwd: '', confirmPwd: '' })
+const handleAvatarUpload = async (uploadFile) => {
+  if (uploadFile.raw.size > 10 * 1024 * 1024) {
+    ElMessage.error('图片不能大于 10MB！')
+    return
+  }
+  if (!uploadFile.raw) return
 
-// 上传头像
-const handleUploadSuccess = (res) => {
-  if (res.code === 200) {
-    const url = res.data
-    shopForm.value.avatar = url.startsWith('http://localhost:8080') ? url.replace('http://localhost:8080', '') : url
-    ElMessage.success('上传成功')
-  } else {
-    ElMessage.error(res.msg || '上传失败')
+  try {
+    const formData = new FormData()
+    formData.append('file', uploadFile.raw)
+
+    const res = await request.post('/file/upload', formData)
+
+    if (res.code === 200) {
+      const url = res.data
+      shopForm.value.avatar = url.replace('http://localhost:8080', '')
+      avatarList.value = [{ url }]
+      ElMessage.success('头像上传成功')
+    } else {
+      ElMessage.error('上传失败')
+    }
+  } catch (err) {
+    ElMessage.error('上传失败，请检查后端')
   }
 }
 

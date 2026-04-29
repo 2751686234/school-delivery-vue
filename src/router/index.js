@@ -4,12 +4,13 @@ const routes = [
   // 登录注册
   { path: '/login', component: () => import('../views/Login.vue') },
   { path: '/register', component: () => import('../views/Register.vue') },
+  { path: '/shop-register', component: () => import('../views/ShopRegister.vue') },
 
   // ================== 用户端 ==================
   { 
     path: '/home', 
     component: () => import('../views/Home.vue'),
-    meta: { role: 1 } // 只有用户能进
+    meta: { role: 1 }
   },
   { 
     path: '/shop', 
@@ -37,7 +38,7 @@ const routes = [
   { 
     path: '/shop-admin', 
     component: () => import('../views/ShopAdmin.vue'),
-    meta: { role: 2 } // 只有商家能进
+    meta: { role: 2 }
   },
   { 
     path: '/shop-order', 
@@ -74,11 +75,16 @@ const routes = [
   { 
     path: '/rider', 
     component: () => import('../views/RiderIndex.vue'),
-    meta: { role: 3 } // 只有骑手能进
+    meta: { role: 3 }
   },
   { 
     path: '/rider-order', 
     component: () => import('../views/RiderOrder.vue'),
+    meta: { role: 3 }
+  },
+  { 
+    path: '/rider-set', 
+    component: () => import('../views/RiderSet.vue'),
     meta: { role: 3 }
   },
 
@@ -86,7 +92,7 @@ const routes = [
   { 
     path: '/admin', 
     component: () => import('../views/Admin.vue'),
-    meta: { role: 4 } // 只有管理员能进
+    meta: { role: 4 }
   },
   { 
     path: '/admin-user', 
@@ -138,7 +144,7 @@ const router = createRouter({
 // ================== 完整权限拦截 ==================
 router.beforeEach((to, from, next) => {
   const userStr = localStorage.getItem('user')
-  const whiteList = ['/login', '/register']
+  const whiteList = ['/login', '/register', '/shop-register']
 
   // 1. 白名单直接放行
   if (whiteList.includes(to.path)) {
@@ -157,7 +163,6 @@ router.beforeEach((to, from, next) => {
   // 4. 如果页面需要权限 → 校验身份
   if (needRole !== undefined) {
     if (user.role !== needRole) {
-      // 身份不匹配 → 去登录
       return next('/login')
     }
   }

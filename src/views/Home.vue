@@ -22,8 +22,8 @@
 
       <!-- 搜索框 -->
       <div class="search-box">
-        <el-input v-model="keyword" placeholder="搜商家/菜品" size="large" />
-        <el-button type="primary" size="large">搜索</el-button>
+        <el-input v-model="keyword" placeholder="搜商家/菜品" size="large" @keyup.enter="handleSearch" />
+        <el-button type="primary" size="large" @click="handleSearch">搜索</el-button>
       </div>
 
       <el-carousel height="180px" class="banner">
@@ -58,6 +58,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Location } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
 
 const router = useRouter()
@@ -78,6 +79,24 @@ const loadShopList = async () => {
   } catch (e) {
     console.error('加载商家失败', e)
   }
+}
+
+// 搜索功能
+const handleSearch = () => {
+  if (!keyword.value.trim()) {
+    loadShopList()
+    return
+  }
+  request.get('/shop/list', {
+    params: { key: keyword.value.trim() }
+  }).then(res => {
+    shopList.value = res.data || []
+    if (shopList.value.length === 0) {
+      ElMessage.info('未找到匹配的商家')
+    }
+  }).catch(() => {
+    ElMessage.error('搜索失败')
+  })
 }
 
 const handleNav = (path) => {

@@ -40,8 +40,9 @@
           </el-button>
         </el-form-item>
 
-        <el-form-item style="text-align:center">
-          <el-button class="link-button" @click="$router.push('/register')">前往注册</el-button>
+        <el-form-item style="text-align:center; display:flex; justify-content:center; gap:16px;">
+          <el-button class="link-button" @click="$router.push('/register')">用户注册</el-button>
+          <el-button class="link-button" @click="$router.push('/shop-register')">商家注册</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -79,7 +80,7 @@ const handleLogin = async () => {
       password: loginForm.value.password
     })
 
-    console.log("后端返回：", res) // 调试用
+    console.log("后端返回：", res)
 
     const response = res?.data ?? res
     const isApiResponse = response && typeof response === 'object' && 'code' in response
@@ -115,21 +116,20 @@ const handleLogin = async () => {
 
     // 5. 保存用户信息
     localStorage.setItem('user', JSON.stringify(payload))
-    //用完整对象写法，延长显示时间到2秒
     ElMessage.success({
       message: `欢迎，${payload.name || payload.username}！`,
-      duration: 2000, // 延长到2秒，给足够的显示时间
+      duration: 2000,
       center: true
     })
 
-    // 6. 延迟跳转时间和提示显示时间对齐（2秒后再跳转）
+    // 6. 延迟跳转
     setTimeout(() => {
       if (actualRole === 1) router.push('/home')
       else if (actualRole === 2) router.push('/shop-admin')
       else if (actualRole === 3) router.push('/rider')
       else if (actualRole === 4) router.push('/admin')
       else router.push('/login')
-    }, 2000) // 和上面的duration保持一致
+    }, 2000)
 
   } catch (err) {
     console.error(err)
@@ -139,7 +139,7 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-/* 页面背景：活力暖橙渐变，贴合外卖行业属性 */
+/* 页面背景：活力暖橙渐变 */
 .login-page {
   width: 100vw;
   height: 100vh;
@@ -152,7 +152,6 @@ const handleLogin = async () => {
   overflow: hidden;
 }
 
-/* 增加 subtle 网格纹理，提升质感 */
 .login-page::before {
   content: '';
   position: absolute;
@@ -171,7 +170,6 @@ const handleLogin = async () => {
   100% { transform: translate(40px, 40px); }
 }
 
-/* 登录卡片：纯白圆角卡片，柔和阴影 */
 .login-box {
   background: #ffffff;
   padding: 52px 40px;
@@ -187,14 +185,8 @@ const handleLogin = async () => {
 }
 
 @keyframes cardSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .login-box:hover {
@@ -202,7 +194,6 @@ const handleLogin = async () => {
   transform: translateY(-6px);
 }
 
-/* 标题：加粗加大，温暖色调 */
 .login-title {
   text-align: center;
   margin-bottom: 44px;
@@ -216,14 +207,12 @@ const handleLogin = async () => {
   text-shadow: 2px 2px 0px rgba(255, 107, 53, 0.1);
 }
 
-/* 表单间距 */
 .login-form {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-/* 输入框美化：加深边框，聚焦高亮 */
 .login-form :deep(.el-input__wrapper) {
   border-radius: 14px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
@@ -236,12 +225,6 @@ const handleLogin = async () => {
   border-color: #ff7e5f;
 }
 
-/* Select 选择器特殊美化 */
-.login-form :deep(.el-select .el-input__wrapper) {
-  cursor: pointer;
-}
-
-/* 登录按钮：暖橙渐变，强点击感 */
 .login-btn {
   width: 100%;
   border-radius: 14px;
@@ -262,7 +245,6 @@ const handleLogin = async () => {
   transform: translateY(-1px);
 }
 
-/* 注册链接：橙色系，保持风格统一 */
 .link-button {
   color: #ff6b35;
   background: transparent;
@@ -279,7 +261,6 @@ const handleLogin = async () => {
   letter-spacing: 0.5px;
 }
 
-/* 响应式微调 */
 @media (max-width: 576px) {
   .login-box {
     padding: 40px 28px;
