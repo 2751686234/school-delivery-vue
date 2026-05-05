@@ -86,18 +86,24 @@ const handleLogin = async () => {
     const isApiResponse = response && typeof response === 'object' && 'code' in response
 
     if (isApiResponse && response.code !== 200) {
-      const msg = response.msg || ''
-      if (/密码/.test(msg)) {
-        ElMessage.error({ message: '密码错误！', duration: 1500, center: true })
-      } else if (/身份/.test(msg)) {
-        ElMessage.error({ message: response.msg || '登录身份错误！', duration: 1500, center: true })
-      } else if (/账号|用户名/.test(msg)) {
-        ElMessage.error({ message: '账号不存在或密码错误！', duration: 1500, center: true })
-      } else {
-        ElMessage.error({ message: response.msg || '账号、密码错误！', duration: 1500, center: true })
-      }
+    const msg = response.msg || ''
+    // 禁用账户特殊提示
+    if (msg.includes('禁用')) {
+      ElMessage.error({ message: msg, duration: 3000, center: true })
       return
     }
+
+    if (/密码/.test(msg)) {
+      ElMessage.error({ message: '密码错误！', duration: 1500, center: true })
+    } else if (/身份/.test(msg)) {
+      ElMessage.error({ message: response.msg || '登录身份错误！', duration: 1500, center: true })
+    } else if (/账号|用户名/.test(msg)) {
+      ElMessage.error({ message: '账号不存在或密码错误！', duration: 1500, center: true })
+    } else {
+      ElMessage.error({ message: response.msg || '账号、密码错误！', duration: 1500, center: true })
+    }
+    return
+  }
 
     const payload = isApiResponse ? response.data : response
     if (!payload) {

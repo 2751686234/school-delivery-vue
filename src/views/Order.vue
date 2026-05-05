@@ -39,14 +39,14 @@
             <el-button v-if="order.status === 1" type="danger" size="small" @click="handleCancelOrder(order.id)">取消订单</el-button>
             <el-button type="info" size="small" @click="handleUserDeleteOrder(order.id)">删除订单记录</el-button>
             <el-button type="primary" size="small" @click="openDetail(order)">查看详情</el-button>
+            <el-button v-if="order.status === 4" type="success" size="small" @click="openEvaluate(order)">评价</el-button>
           </div>
         </el-card>
       </div>
     </div>
 
-    <!-- 订单详情弹窗：商品清单 -->
+    <!-- 订单详情弹窗 -->
     <el-dialog v-model="showDetail" title="订单详情" width="700px" append-to-body>
-      <!-- 订单基本信息 -->
       <el-descriptions :column="2" border size="small" style="margin-bottom:20px">
         <el-descriptions-item label="订单号" :span="2">{{ currentDetail.orderNo }}</el-descriptions-item>
         <el-descriptions-item label="商家名称">{{ currentDetail.shopName }}</el-descriptions-item>
@@ -57,10 +57,16 @@
         <el-descriptions-item label="订单状态">
           <el-tag :type="getStatusTagType(currentDetail.status)">{{ getStatusText(currentDetail.status) }}</el-tag>
         </el-descriptions-item>
+        <el-descriptions-item label="支付方式">{{ currentDetail.paymentMethod || '未设置' }}</el-descriptions-item>
+        <el-descriptions-item label="优惠金额" v-if="currentDetail.discountAmount > 0">
+          <span style="color:#e6a23c">-¥{{ currentDetail.discountAmount }}</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="实付金额" v-if="currentDetail.finalPrice">
+          <span style="color:#ff6b35;font-weight:800">¥{{ currentDetail.finalPrice }}</span>
+        </el-descriptions-item>
         <el-descriptions-item label="下单时间">{{ formatTime(currentDetail.createTime) }}</el-descriptions-item>
       </el-descriptions>
 
-      <!-- 商品清单 -->
       <h4 style="margin-bottom:12px;color:#ff6b35;font-size:16px">商品清单</h4>
       <el-table :data="goodsList" border style="width:100%" align="center">
         <el-table-column type="index" label="序号" width="60" align="center" />
@@ -68,18 +74,31 @@
         <el-table-column prop="num" label="数量" width="80" align="center" />
         <el-table-column prop="price" label="单价（¥）" width="120" align="center" />
         <el-table-column label="小计（¥）" width="120" align="center">
-          <template #default="scope">
-            {{ (scope.row.num * scope.row.price).toFixed(2) }}
-          </template>
+          <template #default="scope">{{ (scope.row.num * scope.row.price).toFixed(2) }}</template>
         </el-table-column>
       </el-table>
 
-      <div style="margin-top: 20px; text-align: right; font-size: 18px;">
-        订单总金额：<span style="color: #ff6b35; font-weight: bold;">¥{{ currentDetail.totalPrice }}</span>
+      <div style="margin-top:20px;text-align:right;font-size:18px;">
+        订单总金额：<span style="color:#ff6b35;font-weight:bold;">¥{{ currentDetail.totalPrice }}</span>
       </div>
-
       <template #footer>
         <el-button @click="showDetail = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 评价弹窗 -->
+    <el-dialog v-model="showEvaluateDialog" title="评价订单" width="450px">
+      <el-form :model="evaluateForm" label-width="80px">
+        <el-form-item label="评分">
+          <el-rate v-model="evaluateForm.score" :max="5" show-score />
+        </el-form-item>
+        <el-form-item label="评价内容">
+          <el-input v-model="evaluateForm.content" type="textarea" :rows="4" placeholder="请描述您的用餐体验..." />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showEvaluateDialog = false">取消</el-button>
+        <el-button type="primary" @click="submitEvaluate">提交评价</el-button>
       </template>
     </el-dialog>
   </div>
@@ -89,6 +108,7 @@
 import { ref, onMounted } from 'vue'
 import { getUserOrderList, cancelOrder } from '@/api/order'
 import { ElMessage } from 'element-plus'
+import { addEvaluate } from '@/api/coupon'
 import request from '@/utils/request'
 
 const orderList = ref([])
@@ -98,6 +118,10 @@ const loading = ref(true)
 const showDetail = ref(false)
 const currentDetail = ref(null)
 const goodsList = ref([])
+
+// 评价弹窗
+const showEvaluateDialog = ref(false)
+const evaluateForm = ref({ orderId: null, shopId: null, score: 5, content: '' })
 
 // 状态文本
 const getStatusText = (status) => {
@@ -111,23 +135,47 @@ const getStatusTagType = (status) => {
   return 'primary'
 }
 
+// 打开评价弹窗
+const openEvaluate = (order) => {
+  evaluateForm.value = {
+    orderId: order.id,
+    shopId: order.shopId,
+    score: 5,
+    content: ''
+  }
+  showEvaluateDialog.value = true
+}
+
+// 提交评价
+const submitEvaluate = async () => {
+  if (!evaluateForm.value.content.trim()) {
+    ElMessage.warning('请填写评价内容')
+    return
+  }
+  try {
+    const user = JSON.parse(localStorage.getItem('user'))
+    await addEvaluate({
+      orderId: evaluateForm.value.orderId,
+      userId: user.id,
+      shopId: evaluateForm.value.shopId,
+      score: evaluateForm.value.score,
+      content: evaluateForm.value.content
+    })
+    ElMessage.success('评价成功')
+    showEvaluateDialog.value = false
+  } catch (e) {
+    ElMessage.error('评价失败')
+  }
+}
+
 // 打开订单详情
 const openDetail = async (order) => {
   try {
     currentDetail.value = order
-
-    // 查询商品清单
-    const res = await request.get('/order/goods/detail', {
-      params: { orderId: order.id }
-    })
+    const res = await request.get('/order/goods/detail', { params: { orderId: order.id } })
     goodsList.value = res.data || []
-
-    // 查询商家、骑手信息
-    const info = await request.get('/order/extra/info', {
-      params: { orderId: order.id }
-    })
+    const info = await request.get('/order/extra/info', { params: { orderId: order.id } })
     currentDetail.value = { ...order, ...info.data }
-
     showDetail.value = true
   } catch (e) {
     ElMessage.error('加载详情失败')
@@ -176,80 +224,23 @@ const formatTime = (time) => {
   return new Date(time).toLocaleString()
 }
 
-onMounted(() => {
-  getOrderList()
-})
+onMounted(() => { getOrderList() })
 </script>
 
 <style scoped>
-.order-page { 
-  width: 100%; 
-  min-height: 100vh; 
-  background: #f8f9fa; 
-}
-
-.nav { 
-  width: 100%; 
-  background: linear-gradient(135deg, #ff7e5f 0%, #ff6b35 100%);
-  border: none;
-  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.25);
-}
-.nav :deep(.el-menu-item) {
-  color: #fff;
-  font-weight: 600;
-  border-bottom: 2px solid transparent;
-  transition: all 0.3s;
-}
-.nav :deep(.el-menu-item:hover),
-.nav :deep(.el-menu-item.is-active) {
-  background: rgba(255,255,255,0.15);
-  color: #fff;
-  border-bottom-color: #fff;
-}
-
-.container { 
-  width: 95%; 
-  max-width: 1000px; 
-  margin: 0 auto; 
-  padding: 28px 0; 
-}
-
+.order-page { width: 100%; min-height: 100vh; background: #f8f9fa; }
+.nav { width: 100%; background: linear-gradient(135deg, #ff7e5f 0%, #ff6b35 100%); border: none; box-shadow: 0 4px 16px rgba(255,107,53,0.25); }
+.nav :deep(.el-menu-item) { color: #fff; font-weight: 600; border-bottom: 2px solid transparent; transition: all 0.3s; }
+.nav :deep(.el-menu-item:hover), .nav :deep(.el-menu-item.is-active) { background: rgba(255,255,255,0.15); color: #fff; border-bottom-color: #fff; }
+.container { width: 95%; max-width: 1000px; margin: 0 auto; padding: 28px 0; }
 .text-center { text-align: center; }
-
-.container h2 {
-  font-size: 26px;
-  font-weight: 800;
-  color: #ff6b35;
-  margin-bottom: 28px;
-  letter-spacing: 1px;
-}
-
+.container h2 { font-size: 26px; font-weight: 800; color: #ff6b35; margin-bottom: 28px; letter-spacing: 1px; }
 .order-item { margin-bottom: 20px; }
-.order-item :deep(.el-card) {
-  border-radius: 16px;
-  border: none;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-  transition: all 0.3s;
-}
-.order-item :deep(.el-card:hover) {
-  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
-}
-
+.order-item :deep(.el-card) { border-radius: 16px; border: none; box-shadow: 0 8px 24px rgba(0,0,0,0.08); transition: all 0.3s; }
+.order-item :deep(.el-card:hover) { box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
 .loading { text-align: center; padding: 40px; color: #909399; font-size: 16px; }
 .empty { text-align: center; padding: 60px; color: #909399; font-size: 18px; font-weight: 500; }
-
-/* 详情弹窗 */
-.order-page :deep(.el-dialog) {
-  border-radius: 20px;
-  overflow: hidden;
-}
-.order-page :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
-  margin: 0;
-  padding: 20px;
-}
-.order-page :deep(.el-dialog__title) {
-  color: #ff6b35;
-  font-weight: 700;
-}
+.order-page :deep(.el-dialog) { border-radius: 20px; overflow: hidden; }
+.order-page :deep(.el-dialog__header) { background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%); margin: 0; padding: 20px; }
+.order-page :deep(.el-dialog__title) { color: #ff6b35; font-weight: 700; }
 </style>
