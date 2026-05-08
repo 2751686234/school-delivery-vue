@@ -63,7 +63,17 @@
           <el-table-column prop="createTime" label="下单时间" align="center" />
           <el-table-column prop="orderNo" label="订单号" align="center" />
           <el-table-column prop="name" label="客户" align="center" />
-          <el-table-column prop="totalPrice" label="金额" align="center" />
+          <el-table-column label="订单金额" align="center">
+            <template #default="scope">
+              <div>原价：¥{{ scope.row.totalPrice }}</div>
+              <div v-if="scope.row.finalPrice" style="color:#ff6b35;font-weight:700">
+                实收：¥{{ scope.row.finalPrice }}
+              </div>
+              <div v-else style="color:#ff6b35;font-weight:700">
+                实收：¥{{ scope.row.totalPrice }}
+              </div>
+            </template>
+          </el-table-column>
           <el-table-column prop="status" label="订单状态" align="center">
             <template #default="scope">
               <el-tag :type="getStatusTagType(scope.row.status)">

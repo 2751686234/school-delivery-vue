@@ -37,6 +37,15 @@
           <el-table-column prop="phone" label="客户电话" align="center" />
           <el-table-column prop="address" label="配送地址" align="center" />
           <el-table-column prop="totalPrice" label="订单金额" align="center" />
+          <el-table-column prop="finalPrice" label="实付金额" align="center">
+            <template #default="scope">
+              <span style="color:#ff6b35;font-weight:700">¥{{ scope.row.finalPrice || scope.row.totalPrice }}</span>
+              <div v-if="scope.row.discountAmount > 0" style="font-size:12px;color:#e6a23c">
+                已优惠¥{{ scope.row.discountAmount }}
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="paymentMethod" label="支付方式" align="center" width="100" />
           <el-table-column label="下单时间" align="center">
             <template #default="scope">
               {{ formatTime(scope.row.createTime) }}
@@ -74,8 +83,15 @@
               <el-tag :type="getTagType(currentOrder.status)">{{ getStatusText(currentOrder.status) }}</el-tag>
             </el-descriptions-item>
             <el-descriptions-item label="下单时间">{{ formatTime(currentOrder.createTime) }}</el-descriptions-item>
+            <el-descriptions-item label="支付方式">{{ currentOrder.paymentMethod || '未设置' }}</el-descriptions-item>
+            <el-descriptions-item label="优惠金额" v-if="currentOrder.discountAmount > 0">
+              <span style="color:#e6a23c">-¥{{ currentOrder.discountAmount }}</span>
+            </el-descriptions-item>
+            <el-descriptions-item label="实付金额" v-if="currentOrder.finalPrice">
+              <span style="color:#ff6b35;font-weight:800">¥{{ currentOrder.finalPrice }}</span>
+            </el-descriptions-item>
           </el-descriptions>
-
+          
           <!-- 商品清单 -->
           <h4 style="margin-bottom:12px;color:#2c3e50;font-size:16px">商品清单</h4>
           <el-table :data="orderDetail" border style="width: 100%;" align="center">

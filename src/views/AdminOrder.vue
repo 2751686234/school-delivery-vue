@@ -31,19 +31,28 @@
       </div>
 
       <el-table :data="list" border align="center">
-        <el-table-column prop="orderNo" label="订单号"/>
+        <el-table-column prop="orderNo" label="订单号" width="200"/>
+        <el-table-column prop="username" label="用户" width="100"/>
+        <el-table-column prop="shopName" label="商店" width="120"/>
+        <el-table-column prop="phone" label="电话" width="120"/>
         
-        <!-- 用户名 -->
-        <el-table-column prop="username" label="用户"/>
-        <!-- 商店名 -->
-        <el-table-column prop="shopName" label="商店"/>
-        <!-- 电话 -->
-        <el-table-column prop="phone" label="电话"/>
+        <!-- 金额列：显示实付 -->
+        <el-table-column label="金额" width="140" align="center">
+          <template #default="scope">
+            <div>原价：¥{{ scope.row.totalPrice }}</div>
+            <div v-if="scope.row.discountAmount > 0" style="font-size:12px;color:#e6a23c;">
+              优惠：-¥{{ scope.row.discountAmount }}
+            </div>
+            <div style="color:#ff6b35;font-weight:700;font-size:15px;">
+              实付：¥{{ scope.row.finalPrice || scope.row.totalPrice }}
+            </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="paymentMethod" label="支付方式" width="100"/>
+        <el-table-column prop="address" label="地址" width="150"/>
         
-        <el-table-column prop="totalPrice" label="金额"/>
-        <el-table-column prop="address" label="地址"/>
-        
-        <el-table-column prop="status" label="状态">
+        <el-table-column prop="status" label="状态" width="100">
           <template #default="scope">
             <el-tag 
               :type="
@@ -63,13 +72,73 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="createTime" label="下单时间"/>
+        <el-table-column prop="createTime" label="下单时间" width="170"/>
         <el-table-column label="操作" width="100">
-          <el-button size="small" type="primary">详情</el-button>
+          <template #default="scope">
+            <el-button size="small" type="primary" @click="openDetail(scope.row)">详情</el-button>
+          </template>
         </el-table-column>
       </el-table>
     </el-card>
   </div>
+
+  <!-- 订单详情弹窗 -->
+  <el-dialog v-model="showDetail" title="订单详情" width="700px">
+    <!-- 订单基本信息 -->
+    <el-descriptions :column="2" border size="small" style="margin-bottom:20px">
+      <el-descriptions-item label="订单号" :span="2">{{ currentOrder.orderNo }}</el-descriptions-item>
+      <el-descriptions-item label="用户账号">{{ currentOrder.username }}</el-descriptions-item>
+      <el-descriptions-item label="联系电话">{{ currentOrder.phone }}</el-descriptions-item>
+      <el-descriptions-item label="商家名称">{{ currentOrder.shopName }}</el-descriptions-item>
+      <el-descriptions-item label="收货地址" :span="2">{{ currentOrder.address }}</el-descriptions-item>
+      <el-descriptions-item label="订单状态">
+        <el-tag :type="currentOrder.status == 4 ? 'success' : currentOrder.status == 5 ? 'danger' : 'primary'">
+          {{ currentOrder.status == 1 ? '待接单' : currentOrder.status == 2 ? '已接单' : currentOrder.status == 3 ? '配送中' : currentOrder.status == 4 ? '已完成' : '已取消' }}
+        </el-tag>
+      </el-descriptions-item>
+      <el-descriptions-item label="支付方式">{{ currentOrder.paymentMethod || '未设置' }}</el-descriptions-item>
+      <el-descriptions-item label="商品总价">
+        <span>¥{{ currentOrder.totalPrice }}</span>
+      </el-descriptions-item>
+      <el-descriptions-item label="优惠金额" v-if="currentOrder.discountAmount > 0">
+        <span style="color:#e6a23c">-¥{{ currentOrder.discountAmount }}</span>
+      </el-descriptions-item>
+      <el-descriptions-item label="实付金额">
+        <span style="color:#ff6b35;font-weight:800;font-size:18px">
+          ¥{{ currentOrder.finalPrice || currentOrder.totalPrice }}
+        </span>
+      </el-descriptions-item>
+      <el-descriptions-item label="下单时间">{{ formatTime(currentOrder.createTime) }}</el-descriptions-item>
+      <el-descriptions-item label="接单时间" v-if="currentOrder.acceptTime">{{ formatTime(currentOrder.acceptTime) }}</el-descriptions-item>
+      <el-descriptions-item label="完成时间" v-if="currentOrder.finishTime">{{ formatTime(currentOrder.finishTime) }}</el-descriptions-item>
+    </el-descriptions>
+
+    <!-- 商品清单 -->
+    <h4 style="margin-bottom:12px;color:#1a2a6c;font-size:16px">商品清单</h4>
+    <el-table :data="goodsList" border style="width:100%" align="center" v-loading="detailLoading">
+      <el-table-column type="index" label="序号" width="60" align="center" />
+      <el-table-column prop="goods_name" label="商品名称" align="center" />
+      <el-table-column prop="num" label="数量" width="80" align="center" />
+      <el-table-column prop="price" label="单价（¥）" width="120" align="center" />
+      <el-table-column label="小计（¥）" width="120" align="center">
+        <template #default="scope">{{ (scope.row.num * scope.row.price).toFixed(2) }}</template>
+      </el-table-column>
+    </el-table>
+
+    <div style="margin-top:20px;text-align:right;font-size:16px;">
+      商品总价：<span style="color:#333;font-weight:bold;">¥{{ currentOrder.totalPrice }}</span>
+      <span v-if="currentOrder.discountAmount > 0" style="color:#e6a23c;margin-left:12px;">
+        优惠：-¥{{ currentOrder.discountAmount }}
+      </span>
+      <span style="color:#ff6b35;font-weight:bold;font-size:20px;margin-left:16px;">
+        实付：¥{{ currentOrder.finalPrice || currentOrder.totalPrice }}
+      </span>
+    </div>
+
+    <template #footer>
+      <el-button @click="showDetail = false">关闭</el-button>
+    </template>
+  </el-dialog>
 </div>
 </template>
 
@@ -87,6 +156,12 @@ const orderNo = ref('')
 const status = ref('')
 const list = ref([])
 
+// 详情弹窗
+const showDetail = ref(false)
+const currentOrder = ref({})
+const goodsList = ref([])
+const detailLoading = ref(false)
+
 const loadList = async () => {
   const res = await request.get('/admin/order/list', {
     params: { orderNo: orderNo.value, status: status.value }
@@ -98,6 +173,31 @@ const reset = () => {
   orderNo.value = ''
   status.value = ''
   loadList()
+}
+
+// 查看详情
+const openDetail = async (row) => {
+  currentOrder.value = row
+  showDetail.value = true
+  detailLoading.value = true
+  
+  try {
+    // 查询商品清单
+    const res = await request.get('/order/goods/detail', {
+      params: { orderId: row.id }
+    })
+    goodsList.value = res.data || []
+  } catch (e) {
+    goodsList.value = []
+    ElMessage.error('加载商品清单失败')
+  } finally {
+    detailLoading.value = false
+  }
+}
+
+const formatTime = (time) => {
+  if (!time) return ''
+  return new Date(time).toLocaleString()
 }
 
 const logout = () => {
@@ -140,7 +240,7 @@ onMounted(() => {
 
 .container {
   width: 90%;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 32px 0;
 }
@@ -224,5 +324,23 @@ onMounted(() => {
 .wrap .el-button--primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 18px rgba(52, 152, 219, 0.4);
+}
+
+/* 弹窗美化 */
+.wrap :deep(.el-dialog) {
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.wrap :deep(.el-dialog__header) {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  margin: 0;
+  padding: 22px 24px;
+}
+.wrap :deep(.el-dialog__title) {
+  color: #1a2a6c;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 1px;
 }
 </style>
