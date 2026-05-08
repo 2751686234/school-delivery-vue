@@ -353,7 +353,7 @@ const submitDiscussion = async (evaluate) => {
     ElMessage.error('讨论失败')
   }
 }
-
+//AI辅助生成：豆包, 2026-4-19 16:00-16:30
 // 修改 selectShop 中调用 loadEvaluates
 const selectShop = async (shop) => {
   currentShop.value = shop
