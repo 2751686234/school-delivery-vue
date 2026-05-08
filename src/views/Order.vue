@@ -35,11 +35,33 @@
           </div>
 
           <!-- 按钮组 -->
-          <div style="margin-top:10px;display:flex;gap:8px;">
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
             <el-button v-if="order.status === 1" type="danger" size="small" @click="handleCancelOrder(order.id)">取消订单</el-button>
             <el-button type="info" size="small" @click="handleUserDeleteOrder(order.id)">删除订单记录</el-button>
             <el-button type="primary" size="small" @click="openDetail(order)">查看详情</el-button>
-            <el-button v-if="order.status === 4" type="success" size="small" @click="openEvaluate(order)">评价</el-button>
+            
+            <!-- 已完成订单 → 评价/追评/查看评价 -->
+            <template v-if="order.status === 4">
+              <!-- 关键修复：从 evalStatusMap 中取状态 -->
+              <el-button 
+                v-if="!getEvalFirst(order.id)" 
+                type="success" size="small" 
+                @click="openEvaluate(order, 1)">
+                评价
+              </el-button>
+              <el-button 
+                v-else 
+                type="warning" size="small" 
+                @click="openEvaluate(order, 2)">
+                追评
+              </el-button>
+              <el-button 
+                v-if="getEvalCount(order.id) > 0"
+                type="info" size="small" 
+                @click="viewOrderEvaluates(order)">
+                查看评价({{ getEvalCount(order.id) }})
+              </el-button>
+            </template>
           </div>
         </el-card>
       </div>
@@ -61,8 +83,8 @@
         <el-descriptions-item label="优惠金额" v-if="currentDetail.discountAmount > 0">
           <span style="color:#e6a23c">-¥{{ currentDetail.discountAmount }}</span>
         </el-descriptions-item>
-        <el-descriptions-item label="实付金额" v-if="currentDetail.finalPrice">
-          <span style="color:#ff6b35;font-weight:800">¥{{ currentDetail.finalPrice }}</span>
+        <el-descriptions-item label="实付金额">
+          <span style="color:#ff6b35;font-weight:800">¥{{ currentDetail.finalPrice || currentDetail.totalPrice }}</span>
         </el-descriptions-item>
         <el-descriptions-item label="下单时间">{{ formatTime(currentDetail.createTime) }}</el-descriptions-item>
       </el-descriptions>
@@ -77,7 +99,6 @@
           <template #default="scope">{{ (scope.row.num * scope.row.price).toFixed(2) }}</template>
         </el-table-column>
       </el-table>
-
       <div style="margin-top:20px;text-align:right;font-size:18px;">
         订单总金额：<span style="color:#ff6b35;font-weight:bold;">¥{{ currentDetail.totalPrice }}</span>
       </div>
@@ -86,8 +107,11 @@
       </template>
     </el-dialog>
 
-    <!-- 评价弹窗 -->
-    <el-dialog v-model="showEvaluateDialog" title="评价订单" width="450px">
+    <!-- 评价/追评弹窗 -->
+    <el-dialog v-model="showEvaluateDialog" :title="evaluateType === 1 ? '评价订单' : '追评'" width="450px">
+      <div v-if="evaluateType === 2" style="margin-bottom:16px;padding:10px;background:#fff7e6;border-radius:8px;font-size:14px;color:#e6a23c">
+        您已评价过此订单，本次为追评
+      </div>
       <el-form :model="evaluateForm" label-width="80px">
         <el-form-item label="评分">
           <el-rate v-model="evaluateForm.score" :max="5" show-score />
@@ -98,14 +122,60 @@
       </el-form>
       <template #footer>
         <el-button @click="showEvaluateDialog = false">取消</el-button>
-        <el-button type="primary" @click="submitEvaluate">提交评价</el-button>
+        <el-button type="primary" @click="submitEvaluate">提交{{ evaluateType === 2 ? '追评' : '评价' }}</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 查看评价弹窗 -->
+    <el-dialog v-model="showViewEvalDialog" title="我的评价" width="550px">
+      <div v-if="viewEvalList.length === 0" style="text-align:center;padding:20px;color:#909399">暂无评价</div>
+      
+      <div v-else>
+        <template v-for="(ev, idx) in viewEvalList" :key="ev.id">
+          <div class="eval-card-item" :style="{ 
+            marginLeft: ev.type === 2 ? '24px' : '0', 
+            borderLeft: ev.type === 2 ? '3px solid #e6a23c' : 'none', 
+            paddingLeft: ev.type === 2 ? '12px' : '0' 
+          }">
+            <div class="eval-header">
+              <div class="eval-user">
+                <span class="eval-username">{{ ev.username || '我' }}</span>
+                <el-tag v-if="ev.type === 1" size="mini" type="success" style="margin-left:6px">首次评价</el-tag>
+                <el-tag v-else size="mini" type="warning" style="margin-left:6px">追评</el-tag>
+              </div>
+              <div class="eval-right">
+                <el-rate :model-value="ev.score" disabled show-score text-color="#ff9900" score-template="{value}分" />
+                <span class="eval-time">{{ formatTime(ev.createTime) }}</span>
+              </div>
+            </div>
+            <div class="eval-content">{{ ev.content }}</div>
+            <!-- 删除评价按钮 -->
+            <div style="text-align:right;margin-top:6px">
+              <el-button 
+                size="mini" 
+                type="danger" 
+                @click="handleDeleteEvaluate(ev)"
+              >
+                删除
+              </el-button>
+            </div>
+            <!-- 追评分隔 -->
+            <div v-if="ev.type === 1 && idx < viewEvalList.length - 1 && viewEvalList[idx + 1].type === 2" 
+                style="text-align:center;color:#e6a23c;margin:8px 0;font-size:13px">
+              ⬇ 追评
+            </div>
+          </div>
+        </template>
+      </div>
+      <template #footer>
+        <el-button @click="showViewEvalDialog = false">关闭</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted, nextTick } from 'vue'
 import { getUserOrderList, cancelOrder } from '@/api/order'
 import { ElMessage } from 'element-plus'
 import { addEvaluate } from '@/api/coupon'
@@ -119,9 +189,18 @@ const showDetail = ref(false)
 const currentDetail = ref(null)
 const goodsList = ref([])
 
+//评价状态存储：直接用 reactive Map
+// { [orderId]: { first: boolean, count: number } }
+const evalStatusMap = reactive({})
+
 // 评价弹窗
 const showEvaluateDialog = ref(false)
 const evaluateForm = ref({ orderId: null, shopId: null, score: 5, content: '' })
+const evaluateType = ref(1) // 1-首次 2-追评
+
+// 查看评价弹窗
+const showViewEvalDialog = ref(false)
+const viewEvalList = ref([])
 
 // 状态文本
 const getStatusText = (status) => {
@@ -135,8 +214,72 @@ const getStatusTagType = (status) => {
   return 'primary'
 }
 
+// 获取订单是否有首次评价（从 evalStatusMap 中读取）
+const getEvalFirst = (orderId) => {
+  return evalStatusMap[orderId]?.first === true
+}
+
+//获取订单评价数量
+const getEvalCount = (orderId) => {
+  return evalStatusMap[orderId]?.count || 0
+}
+
+// 查询单个订单的评价状态
+const loadSingleEvalStatus = async (orderId) => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user'))
+    const res = await request.get('/evaluate/check', {
+      params: { orderId, userId: user.id }
+    })
+    const count = res.data || 0
+    // 直接修改 reactive 对象，触发响应式更新
+    evalStatusMap[orderId] = {
+      first: count > 0,
+      count: count
+    }
+    console.log(`✅ 评价状态已刷新 orderId=${orderId}, count=${count}, first=${count > 0}`)
+    return true
+  } catch (e) {
+    console.error('加载评价状态失败', e)
+    evalStatusMap[orderId] = { first: false, count: 0 }
+    return false
+  }
+}
+//删除评价
+const handleDeleteEvaluate = async (ev) => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user'))
+    const res = await request.post('/evaluate/delete', {
+      id: ev.id,
+      userId: user.id
+    })
+    if (res.code === 200) {
+      ElMessage.success('评价已删除')
+      // 刷新当前查看的评价列表
+      viewEvalList.value = viewEvalList.value.filter(e => e.id !== ev.id)
+      // 刷新评价状态
+      await loadSingleEvalStatus(ev.orderId)
+    } else {
+      ElMessage.error(res.msg || '删除失败')
+    }
+  } catch (e) {
+    ElMessage.error('删除失败')
+  }
+}
+// 批量加载所有已完成订单的评价状态
+const loadAllEvalStatus = async () => {
+  const completedOrders = orderList.value.filter(o => o.status === 4)
+  if (completedOrders.length === 0) return
+  
+  // 并行加载提高效率
+  const promises = completedOrders.map(o => loadSingleEvalStatus(o.id))
+  await Promise.all(promises)
+  console.log('✅ 所有评价状态加载完成', JSON.parse(JSON.stringify(evalStatusMap)))
+}
+
 // 打开评价弹窗
-const openEvaluate = (order) => {
+const openEvaluate = (order, type) => {
+  evaluateType.value = type
   evaluateForm.value = {
     orderId: order.id,
     shopId: order.shopId,
@@ -154,17 +297,50 @@ const submitEvaluate = async () => {
   }
   try {
     const user = JSON.parse(localStorage.getItem('user'))
-    await addEvaluate({
+    const res = await addEvaluate({
       orderId: evaluateForm.value.orderId,
       userId: user.id,
       shopId: evaluateForm.value.shopId,
       score: evaluateForm.value.score,
       content: evaluateForm.value.content
     })
-    ElMessage.success('评价成功')
-    showEvaluateDialog.value = false
+    
+    if (res.code === 200) {
+      ElMessage.success(evaluateType.value === 2 ? '追评成功' : '评价成功')
+      showEvaluateDialog.value = false
+      
+      // 🔥 关键修复：立即刷新该订单的评价状态
+      await loadSingleEvalStatus(evaluateForm.value.orderId)
+    } else {
+      ElMessage.error(res.msg || '评价失败')
+    }
   } catch (e) {
     ElMessage.error('评价失败')
+  }
+}
+
+// 查看该订单的所有评价
+const viewOrderEvaluates = async (order) => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user'))
+    console.log(`🔍 查看评价: orderId=${order.id}, userId=${user.id}`)
+    
+    const res = await request.get('/evaluate/order/list', {
+      params: { orderId: order.id, userId: user.id }
+    })
+    
+    viewEvalList.value = res.data || []
+    console.log('✅ 加载评价列表成功', viewEvalList.value.length, '条')
+    
+    if (viewEvalList.value.length === 0) {
+      ElMessage.info('暂无评价记录')
+      return
+    }
+    
+    showViewEvalDialog.value = true
+  } catch (e) {
+    console.error('加载评价失败', e)
+    ElMessage.error('加载评价失败')
   }
 }
 
@@ -211,6 +387,11 @@ const getOrderList = async () => {
     const user = JSON.parse(localStorage.getItem('user'))
     const res = await getUserOrderList(user.id)
     orderList.value = res.data || []
+    
+    //加载完后刷新评价状态
+    await nextTick()
+    await loadAllEvalStatus()
+    
   } catch (err) {
     orderList.value = []
   } finally {
@@ -230,17 +411,25 @@ onMounted(() => { getOrderList() })
 <style scoped>
 .order-page { width: 100%; min-height: 100vh; background: #f8f9fa; }
 .nav { width: 100%; background: linear-gradient(135deg, #ff7e5f 0%, #ff6b35 100%); border: none; box-shadow: 0 4px 16px rgba(255,107,53,0.25); }
-.nav :deep(.el-menu-item) { color: #fff; font-weight: 600; border-bottom: 2px solid transparent; transition: all 0.3s; }
-.nav :deep(.el-menu-item:hover), .nav :deep(.el-menu-item.is-active) { background: rgba(255,255,255,0.15); color: #fff; border-bottom-color: #fff; }
+.nav :deep(.el-menu-item) { color: #fff; font-weight: 600; }
+.nav :deep(.el-menu-item:hover), .nav :deep(.el-menu-item.is-active) { background: rgba(255,255,255,0.15); color: #fff; }
 .container { width: 95%; max-width: 1000px; margin: 0 auto; padding: 28px 0; }
 .text-center { text-align: center; }
 .container h2 { font-size: 26px; font-weight: 800; color: #ff6b35; margin-bottom: 28px; letter-spacing: 1px; }
 .order-item { margin-bottom: 20px; }
-.order-item :deep(.el-card) { border-radius: 16px; border: none; box-shadow: 0 8px 24px rgba(0,0,0,0.08); transition: all 0.3s; }
-.order-item :deep(.el-card:hover) { box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
+.order-item :deep(.el-card) { border-radius: 16px; border: none; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
 .loading { text-align: center; padding: 40px; color: #909399; font-size: 16px; }
 .empty { text-align: center; padding: 60px; color: #909399; font-size: 18px; font-weight: 500; }
 .order-page :deep(.el-dialog) { border-radius: 20px; overflow: hidden; }
 .order-page :deep(.el-dialog__header) { background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%); margin: 0; padding: 20px; }
 .order-page :deep(.el-dialog__title) { color: #ff6b35; font-weight: 700; }
+
+/* 查看评价样式 */
+.eval-card-item { padding: 0; }
+.eval-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+.eval-user { display: flex; align-items: center; }
+.eval-username { font-weight: 700; font-size: 15px; color: #2c3e50; }
+.eval-right { display: flex; align-items: center; gap: 12px; }
+.eval-time { font-size: 12px; color: #999; }
+.eval-content { font-size: 14px; color: #333; line-height: 1.6; padding: 4px 0 8px; }
 </style>
